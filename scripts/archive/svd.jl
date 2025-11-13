@@ -3,11 +3,69 @@ using Roots: Newton
 using LinearAlgebra
 using FastGaussQuadrature
 using ForwardDiff
+D = ForwardDiff.derivative
 
 L = 1.5
 N = 4
 n = 10
 x = -L:L/N:L;
+
+## Check ∂⁴ₓ u = 0
+u(x) = [1, x, x^2, x^3];
+∂u(x) = [0, 1, 2x, 3x^2];
+∂²u(x) = [0, 0, 2, 6x];
+∂³u(x) = [0, 0, 0, 6];
+_β((a,b,c,d)) = 2*a^2*L+(2*b^2*L^3)/3+4/5*(b*c+a*d)*L^5+(2*c^2*L^7)/7+(2*d^2*L^9)/9
+
+_M = [u(-L)';u(L)';∂u(-L)';∂u(L)'];
+# _M = [∂²u(-L)';∂²u(L)';∂³u(-L)';∂³u(L)'];
+r = rank(_M)
+k = size(_M,1)-r
+~,~,V = svd(_M)
+α = V[:,end-k+1:end]
+α_hat = map(t->t/sqrt(_β(t)),eachcol(α))
+
+U = zeros(k,length(x))
+for i ∈ 1:k
+  map!(u -> u⋅α_hat[i], @view(U[i,:]), u.(x))
+end
+U
+
+xg,wg=gausslegendre(100)
+O = zeros(2,2);
+_u = u.(xg*L)
+for i ∈ 1:2
+  for j ∈ 1:2
+    O[i,j] = L*(wg ⋅ (map(u -> u⋅α_hat[i], _u) .* map(u -> u⋅α_hat[j], _u)))
+  end
+end
+O
+O ≈ I(n)
+
+u.(x) .⋅ (α_hat[1],)
+u.(x) .⋅ (α_hat[2],)
+Broadcast()
+
+λ, V = eigen(_M);
+P = sortperm(abs.(λ));
+all(@. abs(λ) > eps())
+@. abs(λ)
+_α1 = V[:,1]; _α1 = _α1 / sqrt(_β(_α1))
+_α2 = V[:,2]; _α2 = _α2 / sqrt(_β(_α2))
+_α3 = V[:,3]; _α3 = _α3 / sqrt(_β(_α3))
+
+
+
+U = zeros(3,length(x))
+U[1,:] = map(u -> u⋅_α1, u.(x))
+U[2,:] = map(u -> u⋅_α2, u.(x))
+U[3,:] = map(u -> u⋅_α3, u.(x))
+
+xg,wg=gausslegendre(100)
+L*(wg ⋅ (map(u -> u⋅_α1, u.(xg*L)) .* map(u -> u⋅_α3, u.(xg*L))))
+L*(wg ⋅ (map(u -> u⋅_α2, u.(xg*L)) .* map(u -> u⋅_α2, u.(xg*L))))
+L*(wg ⋅ (map(u -> u⋅_α3, u.(xg*L)) .* map(u -> u⋅_α3, u.(xg*L))))
+
 
 u(x,μ,α) = @. α[1]*exp(μ*x) + α[2]*exp(-μ*x) + α[3]*cos(μ*x) + α[4]*sin(μ*x);
 ∂ₓ²u(x,μ,α) = @. μ^2*(α[1]*exp(μ*x) + α[2]*exp(-μ*x) - α[3]*cos(μ*x) - α[4]*sin(μ*x));
@@ -32,13 +90,14 @@ for i in 1:n
   approx_root = π*k-(-1)^j*π/4-exp(-2*π*k-π/2)
   μ[i] = find_zero((g,dg),approx_root,Newton())/L
   λ, V = eigen(M(μ[i]));
-  P = sortperm(abs.(λ))
+  P = sortperm(abs.(λ));
+  @assert abs(λ[P[1]]) < 1e-10 "Expected |λ| ≈ 0, got $(abs(λ[P[1]]))"
   α[i] .= V[:,P[1]]
 end
 
 U = zeros(n,length(x))
 ∂ₓ²U = zeros(n,length(x));
-α_hat = @. α/sqrt(β(μ,α));
+α_hat = 1 ./ sqrt.(β.(μ,α)) .* α;
 for i ∈ eachindex(μ)
   U[i,:] = u(x,μ[i],α_hat[i])
   ∂ₓ²U[i,:] = ∂ₓ²u(x,μ[i],α_hat[i])
