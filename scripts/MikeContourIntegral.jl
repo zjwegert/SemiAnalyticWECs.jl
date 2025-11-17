@@ -19,12 +19,17 @@ function compute_φ(x,ξ,z,ζ,h,K;order=20)
 
   function F(r)
     μ = r*(1+im)
-    (1+im)*real(exp(im*μ*X))/cosh(μ*h)*( cosh(μ*(z+h))*cosh(μ*(ζ+h))/(μ*sinh(μ*h) - K*cosh(μ*h)) + exp(-μ*h)/μ*sinh(μ*z)*sinh(μ*ζ) )
+    (1+im)*exp(im*μ*X)/cosh(μ*h)*( cosh(μ*(z+h))*cosh(μ*(ζ+h))/(μ*sinh(μ*h) - K*cosh(μ*h)) + exp(-μ*h)/μ*sinh(μ*z)*sinh(μ*ζ) )
   end
   R,w=gausslaguerre(order)
-  I = (F.(R)⋅w)
+  I = real(F.(R)⋅w)
 
-  return log(r/r₁) .- 2*I
+  k₀ = first(dispersion_free_surface(K,0,h))
+  k = k₀/(-im)
+  N₀² = 1/2*(1 + sin(2*k₀*h)/(2*k₀*h))
+  Im_φ = -π/(k₀*h*N₀²)*cosh(k*(z+h))*cosh(k*(ζ+h))*cos(k*X) # Mike says this is residue?
+
+  return log(r/r₁) .- 2*I + Im_φ
 end
 
 # compute_φ(1,0.5,-1,0.5,1,1;order=10)
