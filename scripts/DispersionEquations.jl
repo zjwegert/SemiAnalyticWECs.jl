@@ -19,7 +19,7 @@ function dispersion_free_surface(α,N,h=1.0)
   # Treated seperately, no special methods needed
   roots[1] = dispersion_free_homotopy(α,0)
   # Find remaining roots
-  if N > 1
+  if N > 0
     i = 1
     while true
       # (a) Homotopy from previous root
@@ -46,6 +46,9 @@ function dispersion_free_surface(α,N,h=1.0)
   end
   roots   .*= -im/h
   roots[1] *= -1
+  if iszero(N)
+    return roots[1:1]
+  end
   return roots
 end
 
