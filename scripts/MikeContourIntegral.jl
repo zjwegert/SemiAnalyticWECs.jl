@@ -1,6 +1,5 @@
-using FastGaussQuadrature
 using LinearAlgebra
-using QuadGK
+using Integrals
 using Roots
 using Roots: Newton
 
