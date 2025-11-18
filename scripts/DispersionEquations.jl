@@ -50,9 +50,6 @@ function dispersion_free_surface(α::Complex, N, h=1.0)
   end
   roots   .*= -im/h
   roots[1] *= -1
-  if iszero(N)
-    return roots[1:1]
-  end
   return roots
 end
 
@@ -63,20 +60,21 @@ Calculates the positive imaginary and N first solutions with positive real part
 of -α = k*tan(k h) for real α.
 """
 function dispersion_free_surface(α::Real, N, h=1.0)
+  α *= h;
   k = zeros(ComplexF64,N+1);
 
   # take positive real root
-  k[1] = abs(dispersion_free_root(α,sqrt(α/h)));
+  k[1] = abs(dispersion_free_root(α,sqrt(α)));
 
-  f(z) = α*cos(z*h)+z*sin(z*h);
+  f(z) = α*cos(z)+z*sin(z);
   for jj=1:N
-      a = (jj-0.5)*π/h;
-      b=jj*π/h;
+      a = (jj-0.5)*π;
+      b=jj*π;
       z0 = fzero(f,[a,b]);
       k[jj+1] = im*z0;
   end
 
-  k   .*= -im
+  k   .*= -im/h
   k[1] *= -1
   return k
 end
