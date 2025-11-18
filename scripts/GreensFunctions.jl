@@ -5,9 +5,9 @@ using LinearAlgebra
 # Green's function on the surface
 
 """
-    G = matrix_G_surface(α,n,L,H)
+    G = matrix_G_surface(α,H,L,n)
 Compute G where α is the frequency squared, H is the water depth, L is half the
-plate length and 2N+1 is the number of points. The points are evenly space
+plate length and 2n+1 is the number of points. The points are evenly space
 starting with -L and ending with L (note that because we use Simpson's
 rule we require an odd number of points).
 """
@@ -87,3 +87,5 @@ function green_surface_finite_depth_2d(α,R,H;ϵ=1e-10,N=10)
 
   return v
 end
+
+# Submerged Green's function

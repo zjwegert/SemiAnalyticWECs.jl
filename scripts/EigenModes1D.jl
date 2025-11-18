@@ -3,29 +3,29 @@ using Roots: Newton
 using LinearAlgebra
 
 """
-    eigenmodes_1d(bc_case::Tuple{Symbol,Symbol},N,L,x::Vector)
+    eigenmodes_1d(bc_case,N,L,x)
 
 Calculates the first N eigenmodes and eigenvalues of the PDE:
   ∂⁴ₓ u = μ⁴ u,  x ∈ [-L,L]
-with boundary conditions specified by `bc_case` at x = -L and x = L.
-x is the vector of spatial points where the modes are evaluated.
+with boundary conditions specified by `bc_case` at x = -L and x = L
+at as tuple. E.g., `bc_case = (:clamped,:clamped)` or equivalently
+`bc_case = :clamped`. x is the vector of spatial points where the
+modes are evaluated.
 
 Possible boundary conditions are:
 - :clamped  => u = 0, ∂ₓu = 0
 - :free     => ∂²ₓu = 0, ∂³ₓu = 0
 - :simply_supported => u = 0, ∂²ₓu = 0
 """
-function eigenmodes_1d(bc_case::Tuple{Symbol,Symbol},N,L,x::Vector)
-  if bc_case == (:clamped,:clamped)
+function eigenmodes_1d(bc_case,N,L,x)
+  if bc_case == (:clamped,:clamped) || bc_case == :clamped
     return _eigenmodes_clamped_clamped(N,L,x)
-  elseif bc_case == (:free,:free)
+  elseif bc_case == (:free,:free) || bc_case == :free
     return _eigenmodes_free_free(N,L,x)
   else
     @error "Boundary condition case $(bc_case), not yet implemented."
   end
 end
-
-eigenmodes_1d(bc_case::Symbol,kwargs...) = eigenmodes_1d((bc_case,bc_case),kwargs...)
 
 # free-free
 

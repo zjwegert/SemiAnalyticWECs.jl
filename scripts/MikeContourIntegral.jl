@@ -1,11 +1,9 @@
 using LinearAlgebra
-using Integrals
+using QuadGK
 using Roots
 using Roots: Newton
 
 include("DispersionEquations.jl")
-
-
 
 function compute_contour_integral(x,ξ,z,ζ,h,K)
   r = sqrt((x-ξ)^2 + (z-ζ)^2)
@@ -13,12 +11,10 @@ function compute_contour_integral(x,ξ,z,ζ,h,K)
   X = x - ξ
 
   function F(R)
-    μ = R*exp(im*π/4)
-    exp(im*π/4)*cos(μ*X)/cosh(μ*h)*( cosh(μ*(z+h))*cosh(μ*(ζ+h))/(μ*sinh(μ*h) - K*cosh(μ*h)) + exp(-μ*h)/μ*sinh(μ*z)*sinh(μ*ζ) )
+    μ = R*exp(im*π/100)
+    exp(im*π/100)*cos(μ*X)/cosh(μ*h)*( cosh(μ*(z+h))*cosh(μ*(ζ+h))/(μ*sinh(μ*h) - K*cosh(μ*h)) + exp(-μ*h)/μ*sinh(μ*z)*sinh(μ*ζ) )
   end
-  I = Float64(real(quadgk(F, big(0.0), big(20000), rtol=1e-8, order = 50)[1]))
-  # I = real(quadgk(F, big(0.0), big(40000), rtol=1e-8, order = 50)[1])
-  # I = real(quadgk(F, big(0.0), big(Inf), rtol=1e-12, order = 21)[1]) # Fails because of overflow times underflow
+  I = (real(quadgk(F, big(0.0), big(Inf), rtol=1e-12, order = 21)[1]))
 
   k₀ = first(dispersion_free_surface(K,0,h))
   k = k₀/(-im)
@@ -31,10 +27,19 @@ end
 function compute_eigenexpansion(x,ξ,z,ζ,h,K;N=10)
   kₙ = dispersion_free_surface(K,N,h)
   Nₙ² = @. 1/2*(1 + sin(2*kₙ*h)/(2*kₙ*h))
-  return -sum(@. π/(kₙ*h*Nₙ²)*cos(kₙ*(z+h))*cos(kₙ*(ζ+h))*exp(-kₙ*abs(x-ξ)))
+  ϕ = -sum(@. π/(kₙ*h*Nₙ²)*cos(kₙ*(z+h))*cos(kₙ*(ζ+h))*exp(-kₙ*abs(x-ξ)))
+  ∂_z_ϕ = sum(@. π/(Nₙ²)*sin(kₙ*(z+h))*cos(kₙ*(ζ+h))*exp(-kₙ*abs(x-ξ)))
+  ∂_ζ_ϕ = sum(@. π/(Nₙ²)*cos(kₙ*(z+h))*sin(kₙ*(ζ+h))*exp(-kₙ*abs(x-ξ)))
+  return ϕ, ∂_z_ϕ, ∂_ζ_ϕ
 end
 
-Ic = compute_contour_integral(1,0.5,-1,0.5,1,1)
-I_eigen = compute_eigenexpansion(1,0.5,-1,0.5,1,1;N=100)
+using ForwardDiff
+Ic = ComplexF64(compute_contour_integral(1,0.5,-1,0.5,1,1))
+∂_z_Ic = ComplexF64(ForwardDiff.derivative(z -> compute_contour_integral(1,0.5,z,0.5,1,1), -1))
+∂_ζ_Ic = ComplexF64(ForwardDiff.derivative(ζ -> compute_contour_integral(1,0.5,-1,ζ,1,1), 0.5))
+
+I_eigen,∂_z_I_eigen, ∂_ζ_I_eigen = compute_eigenexpansion(1,0.5,-1,0.5,1,1;N=100)
 
 Ic - I_eigen
+∂_z_Ic - ∂_z_I_eigen
+∂_ζ_Ic - ∂_ζ_I_eigen
