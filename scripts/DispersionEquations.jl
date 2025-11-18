@@ -1,6 +1,10 @@
+using Roots
+using Roots: Newton
+using LinearAlgebra
+
 # Dispersion equation for free surface problem: -α = k*tan(kh)
 """
-    dispersion_free_surface(α,N,h)
+    dispersion_free_surface(α::Complex, N, h)
 
 Calculates the positive imaginary and N first solutions with positive real part
 of -α = k*tan(k h) for complex α. It uses three methods:
@@ -13,7 +17,7 @@ ordered from smallest.
 
 Ported from MATLAB code by Prof Mike Meylan.
 """
-function dispersion_free_surface(α,N,h=1.0)
+function dispersion_free_surface(α::Complex, N, h=1.0)
   α *= h;
   roots = zeros(ComplexF64,N+1)
   # Treated seperately, no special methods needed
@@ -52,21 +56,30 @@ function dispersion_free_surface(α,N,h=1.0)
   return roots
 end
 
-# function k = dispersion(M,H,alpha)
-# k = zeros(M+1,1);
+"""
+    dispersion_free_surface(α::Real, N, h=1.0)
 
-# k(1) = abs(fzero(@(k) k.*tanh(k*H)-alpha,sqrt(alpha/H))); %take positive real root
+Calculates the positive imaginary and N first solutions with positive real part
+of -α = k*tan(k h) for real α.
+"""
+function dispersion_free_surface(α::Real, N, h=1.0)
+  k = zeros(ComplexF64,N+1);
 
+  # take positive real root
+  k[1] = abs(dispersion_free_root(α,sqrt(α/h)));
 
-# fun = @(kappa) alpha*cos(kappa*H)+kappa*sin(kappa*H);
-# for jj=1:M
-#     a = (jj-0.5)*pi/H;
-#     b=jj*pi/H;
-#     kappa = fzero(fun,[a,b]);
-#     k(jj+1) = 1i*kappa;
-# end
+  f(z) = α*cos(z*h)+z*sin(z*h);
+  for jj=1:N
+      a = (jj-0.5)*π/h;
+      b=jj*π/h;
+      z0 = fzero(f,[a,b]);
+      k[jj+1] = im*z0;
+  end
 
-# end
+  k   .*= -im
+  k[1] *= -1
+  return k
+end
 
 function dispersion_free_homotopy(α,N)
   f(α) = z -> z*tanh(z) - α
