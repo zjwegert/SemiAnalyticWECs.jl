@@ -52,6 +52,22 @@ function dispersion_free_surface(α,N,h=1.0)
   return roots
 end
 
+# function k = dispersion(M,H,alpha)
+# k = zeros(M+1,1);
+
+# k(1) = abs(fzero(@(k) k.*tanh(k*H)-alpha,sqrt(alpha/H))); %take positive real root
+
+
+# fun = @(kappa) alpha*cos(kappa*H)+kappa*sin(kappa*H);
+# for jj=1:M
+#     a = (jj-0.5)*pi/H;
+#     b=jj*pi/H;
+#     kappa = fzero(fun,[a,b]);
+#     k(jj+1) = 1i*kappa;
+# end
+
+# end
+
 function dispersion_free_homotopy(α,N)
   f(α) = z -> z*tanh(z) - α
   df(z) = tanh(z) + z*sech(z)^2
