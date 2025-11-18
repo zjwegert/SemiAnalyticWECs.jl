@@ -5,6 +5,14 @@ using Roots: Newton
 
 include("DispersionEquations.jl")
 
+"""
+  Compute Green's function for submerged source using residue calculus.
+
+    ϕ = ... (B.38)
+    ∂²_zζϕ = ...
+
+  where kₙ are roots of dispersion equation for free surface waves.
+"""
 function compute_contour_integral(x,ξ,z,ζ,h,K)
   r = sqrt((x-ξ)^2 + (z-ζ)^2)
   r₁ = sqrt((x-ξ)^2 + (z+ζ)^2)
@@ -14,7 +22,7 @@ function compute_contour_integral(x,ξ,z,ζ,h,K)
     μ = R*exp(im*π/100)
     exp(im*π/100)*cos(μ*X)/cosh(μ*h)*( cosh(μ*(z+h))*cosh(μ*(ζ+h))/(μ*sinh(μ*h) - K*cosh(μ*h)) + exp(-μ*h)/μ*sinh(μ*z)*sinh(μ*ζ) )
   end
-  I = (real(quadgk(F, big(0.0), big(Inf), rtol=1e-12, order = 21)[1]))
+  I = Float64(real(quadgk(F, big(0.0), big(Inf), rtol=1e-12, order = 21)[1]))
 
   k₀ = first(dispersion_free_surface(K,0,h))
   k = k₀/(-im)
@@ -24,22 +32,24 @@ function compute_contour_integral(x,ξ,z,ζ,h,K)
   return log(r/r₁) - 2*I + Im_φ
 end
 
+"""
+  Compute eigenfunction expansion of Green's function for submerged source.
+
+    ϕ = -Σ{ π/(kₙNₙ²h)cos(kₙ(z+h))*cos(kₙ(ζ+h))exp(-kₙ|x-ξ|) }
+    ∂²_zζϕ = -Σ{ kₙπ/(Nₙ²h)sin(kₙ(z+h))*sin(kₙ(ζ+h))exp(-kₙ|x-ξ|) }
+
+  where kₙ are roots of dispersion equation for free surface waves.
+"""
 function compute_eigenexpansion(x,ξ,z,ζ,h,K;N=10)
   kₙ = dispersion_free_surface(K,N,h)
   Nₙ² = @. 1/2*(1 + sin(2*kₙ*h)/(2*kₙ*h))
   ϕ = -sum(@. π/(kₙ*h*Nₙ²)*cos(kₙ*(z+h))*cos(kₙ*(ζ+h))*exp(-kₙ*abs(x-ξ)))
-  ∂_z_ϕ = sum(@. π/(Nₙ²)*sin(kₙ*(z+h))*cos(kₙ*(ζ+h))*exp(-kₙ*abs(x-ξ)))
-  ∂_ζ_ϕ = sum(@. π/(Nₙ²)*cos(kₙ*(z+h))*sin(kₙ*(ζ+h))*exp(-kₙ*abs(x-ξ)))
-  return ϕ, ∂_z_ϕ, ∂_ζ_ϕ
+  ∂z∂ζ_ϕ = -sum(@. kₙ*π/(h*Nₙ²)*sin(kₙ*(z+h))*sin(kₙ*(ζ+h))*exp(-kₙ*abs(x-ξ)))
+  return ϕ, ∂z∂ζ_ϕ
 end
 
-using ForwardDiff
-Ic = ComplexF64(compute_contour_integral(1,0.5,-1,0.5,1,1))
-∂_z_Ic = ComplexF64(ForwardDiff.derivative(z -> compute_contour_integral(1,0.5,z,0.5,1,1), -1))
-∂_ζ_Ic = ComplexF64(ForwardDiff.derivative(ζ -> compute_contour_integral(1,0.5,-1,ζ,1,1), 0.5))
+Ic = compute_contour_integral(0.5,0,-1,-1,10,1)
 
-I_eigen,∂_z_I_eigen, ∂_ζ_I_eigen = compute_eigenexpansion(1,0.5,-1,0.5,1,1;N=100)
+I_eigen, ∂z∂ζ_I_eigen = compute_eigenexpansion(0.5,0,-1,-1,10,1;N=100)
 
 Ic - I_eigen
-∂_z_Ic - ∂_z_I_eigen
-∂_ζ_Ic - ∂_ζ_I_eigen
