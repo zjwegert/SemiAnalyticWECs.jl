@@ -160,9 +160,21 @@ function solve_submerged_plate_2d(
   x[1:end-1] .+= δx/2; # use midpoints
 
   # Compute eigenvalues and eigenmodes for plate
-  λ,u,∂ₓ²u = eigenmodes_1d(bc_case,N,L,x)
+  λ,u,∂ₓ²u = eigenmodes_1d(bc_case,N,L,x) # TODO: cache
 
-  # TODO: need following functions
-  # - G_int_z_zeta_regular
-  # - G_int_z
+  # Computing BIE matrix
+  k = first(dispersion_free_surface(α,0,H));
+  N₀² = 1/2*(1 - (sin(k*H)^2)/α/H);
+  k = k/im;
+
+  G = zeros(n);
+  G[1] = 4/δx+∂z∂ζ_regular_greens_submerged_2d(0,-h,-h,H,α)*δx;
+  for ii=2:n
+    dist = (ii-1)*δx;
+    G[ii] = -1/(dist-δx/2)+1/(dist+δx/2) + ∂z∂ζ_regular_greens_submerged_2d(dist,-h,-h,H,α)*δx;
+  end
+
+  K = 1/(2*π)*G[round.(Int,abs.((1:n).-transpose(1:n)).+1)];
+
+  # solving diffraction problem
 end
