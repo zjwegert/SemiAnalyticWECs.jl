@@ -83,7 +83,7 @@ function solve_surface_plate_2d(
   ξ = (ρ_w*g*I + D*Diagonal(λ.^4) - ω.^2*Ib*I + im*ω*B)\f; # calculated α_n
 
   w = transpose(ξ)*u;
-  ϕ =  transpose(ξ)*transpose(ϕ_r) + transpose(ϕ_d);
+  η_s =  transpose(ξ)*transpose(ϕ_r) + transpose(ϕ_d);
 
   # Compute reflection and transmission coefficients
   R = -1/(tan(k*H) + k*H*sec(k*H)^2)*transpose(exp.(-k*x)).*(α*ϕ - im*ω*w) ⋅ diag(ws)
@@ -100,9 +100,10 @@ function solve_surface_plate_2d(
   P_nearfield = Gp*ω^2/2*abs.(ηp*∂ₓ²w/(Gp-im*ω*Cp)).^2 ⋅ diag(ws);
 
   if return_displacements
-    return R, T, P_farfield, P_nearfield, Cg, w, ϕ
+    v = im*ω*ηp/(Gp-im*ω*Cp)*∂ₓ²w; # voltage
+    return (;R, T, P_farfield, P_nearfield, Cg, w, η_s, v)
   else
-    return R, T, P_farfield, P_nearfield, Cg
+    return (;R, T, P_farfield, P_nearfield, Cg)
   end
 end
 
@@ -160,7 +161,7 @@ function solve_submerged_plate_2d(
   x[1:end-1] .+= δx/2; # use midpoints
 
   # Compute eigenvalues and eigenmodes for plate
-  λ,u,∂ₓ²u = eigenmodes_1d(bc_case,N,L,x) # TODO: cache
+  λ,u,∂ₓ²u = eigenmodes_1d(bc_case,N,L,x) # TODO: caching
 
   # Computing BIE matrix
   k = first(dispersion_free_surface(α,0,H));
@@ -177,4 +178,58 @@ function solve_submerged_plate_2d(
   K = 1/(2*π)*G[round.(Int,abs.((1:n).-transpose(1:n)).+1)];
 
   # solving diffraction problem
+  f = -transpose(-im*A*g*k/(ω*cosh(k*H))*sinh(k*(H-h))*exp(im*k*x));
+  ϕ_di_jump = (-K)\f; # jump in potential of diffraction problem
+
+  # solving radiation problems
+  ϕ_rad_jump = (-K)\(-im*ω*u); # jump in potential of radiation problems
+
+  # Solving coupled elasticity problem from dry modes expansion
+  K_stiff = Diagonal(D*λ.^4);
+  M_mass = Ib*I;
+  M_added = δx*u'*ϕ_rad_jump;
+
+  # Forcing vector
+  F = -im*ω*ρ_w*δx*u'*ϕ_di_jump;
+
+  # Coefficients of dry modes expansion
+  c = (K_stiff-ω^2*M_mass+im*ω*ρ_w*M_added)\F;
+
+  # Jump in potential of coupled problem
+  ϕ_jump = ϕ_di_jump + ϕ_rad_jump*c;
+
+  # Reflection and transmission
+  coeff = ω*sinh(k*(H-h))*cosh(k*H)/(2*A*g*H*N₀²);
+  R = -coeff*exp(im*k*x)*ϕ_jump*δx;
+  T = 1 - coeff*exp(-im*k*x)*ϕ_jump*δx;
+  Cg = ω/(2*k)*(1+2*k*H/sinh(2*k*H));
+  P_farfield = 1/2*ρ_w*g*A^2*Cg*(1 - abs(R)^2 - abs(T)^2);
+
+  # Near-field power takeoff
+  ∂ₓ²w = ∂ₓ²u*c;
+  P_nearfield = Gp*omega^2/2*abs(ηp/(Gp-im*ω*Cp))^2*(transpose(∂ₓ²w)*∂ₓ²w*δx);
+
+  if !return_displacements
+      return (;R, T, P_farfield, P_nearfield, Cg)
+  else
+    # Evaluate displacements if plotting
+    XF = linspace(-3*L,3*L,301); # free surface points
+    dzG = zeros(length(XF),length(x));
+    w = u*c; # deflection of plate
+    v = im*ω*ηp/(Gp-im*ω*Cp)*∂ₓ²w; # voltage
+
+    # Greens function matrix for free surface
+    for ii=axes(dzG,1)
+        for jj=axes(dzG,2)
+            dzG[ii,jj] = G_int_z(abs(XF[ii]-x[jj]),-h,0,H,α)/2/π;
+        end
+    end
+
+    # free surface elevation
+    η_inc = A*exp.(im*k*transpose(XF));
+    η_sc = -im*ω/g*dzG*ϕ_jump*δx;
+    η_s = η_inc+η_sc;
+
+    return (;R, T, P_farfield, P_nearfield, Cg, w, η_s, v)
+  end
 end
