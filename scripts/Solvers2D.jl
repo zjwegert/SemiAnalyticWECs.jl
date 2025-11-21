@@ -153,22 +153,25 @@ function solve_submerged_plate_2d(
   return_displacements=false,
   bc_case=:clamped
 )
+  A = 1; # incident wave amplitude TODO
   α = ω.^2/g
 
   # Calculation points, here we instead use midpoints
-  x = range(-L,L,n+1);
+  x = collect(range(-L,L,n+1));
   δx = x[2]-x[1];
-  x[1:end-1] .+= δx/2; # use midpoints
+  x = transpose(x[1:end-1] .+ δx/2); # use midpoints
 
   # Compute eigenvalues and eigenmodes for plate
   λ,u,∂ₓ²u = eigenmodes_1d(bc_case,N,L,x) # TODO: caching
+  u = transpose(u);
+  ∂ₓ²u = transpose(∂ₓ²u);
 
   # Computing BIE matrix
   k = first(dispersion_free_surface(α,0,H));
   N₀² = 1/2*(1 - (sin(k*H)^2)/α/H);
   k = k/im;
 
-  G = zeros(n);
+  G = zeros(ComplexF64,n);
   G[1] = 4/δx+∂z∂ζ_regular_greens_submerged_2d(0,-h,-h,H,α)*δx;
   for ii=2:n
     dist = (ii-1)*δx;
@@ -178,7 +181,7 @@ function solve_submerged_plate_2d(
   K = 1/(2*π)*G[round.(Int,abs.((1:n).-transpose(1:n)).+1)];
 
   # solving diffraction problem
-  f = -transpose(-im*A*g*k/(ω*cosh(k*H))*sinh(k*(H-h))*exp(im*k*x));
+  f = -transpose(-im*A*g*k/(ω*cosh(k*H))*sinh(k*(H-h))*exp.(im*k*x));
   ϕ_di_jump = (-K)\f; # jump in potential of diffraction problem
 
   # solving radiation problems
@@ -200,33 +203,33 @@ function solve_submerged_plate_2d(
 
   # Reflection and transmission
   coeff = ω*sinh(k*(H-h))*cosh(k*H)/(2*A*g*H*N₀²);
-  R = -coeff*exp(im*k*x)*ϕ_jump*δx;
-  T = 1 - coeff*exp(-im*k*x)*ϕ_jump*δx;
-  Cg = ω/(2*k)*(1+2*k*H/sinh(2*k*H));
-  P_farfield = 1/2*ρ_w*g*A^2*Cg*(1 - abs(R)^2 - abs(T)^2);
+  R = -first(coeff*exp.(im*k*x)*ϕ_jump*δx);
+  T = 1 - first(coeff*exp.(-im*k*x)*ϕ_jump*δx);
+  Cg = real(ω/(2*k)*(1+2*k*H/sinh(2*k*H)));
+  P_farfield = 1/2*ρ_w*g*abs(A)^2*Cg*(1 - abs(R)^2 - abs(T)^2);
 
   # Near-field power takeoff
   ∂ₓ²w = ∂ₓ²u*c;
-  P_nearfield = Gp*omega^2/2*abs(ηp/(Gp-im*ω*Cp))^2*(transpose(∂ₓ²w)*∂ₓ²w*δx);
+  P_nearfield = Gp*ω^2/2*abs(ηp/(Gp-im*ω*Cp))^2*(abs(first(∂ₓ²w'*∂ₓ²w))*δx);
 
   if !return_displacements
       return (;R, T, P_farfield, P_nearfield, Cg)
   else
     # Evaluate displacements if plotting
-    XF = linspace(-3*L,3*L,301); # free surface points
-    dzG = zeros(length(XF),length(x));
+    XF = collect(range(-3*L,3*L,301)); # free surface points
+    dzG = zeros(ComplexF64,length(XF),length(x));
     w = u*c; # deflection of plate
     v = im*ω*ηp/(Gp-im*ω*Cp)*∂ₓ²w; # voltage
 
     # Greens function matrix for free surface
     for ii=axes(dzG,1)
         for jj=axes(dzG,2)
-            dzG[ii,jj] = G_int_z(abs(XF[ii]-x[jj]),-h,0,H,α)/2/π;
+            dzG[ii,jj] = ∂z_regular_greens_submerged_2d(abs(XF[ii]-x[jj]),-h,0,H,α)/2/π;
         end
     end
 
     # free surface elevation
-    η_inc = A*exp.(im*k*transpose(XF));
+    η_inc = A*exp.(im*k*XF);
     η_sc = -im*ω/g*dzG*ϕ_jump*δx;
     η_s = η_inc+η_sc;
 
