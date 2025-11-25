@@ -28,7 +28,7 @@ D = @. B + ω*η^2/(im*G+ω*C);
 
 data = map(1:length(ω)) do i
   println(((i-1)/length(ω)*100), " percent complete");
-  solve_submerged_plate_2d(ω[i],D[i],Ib,η,G,C,H,h,L,100,ceil(Int,L/0.05);bc_case=:free)
+  solve_submerged_plate_2d(ω[i],D[i],Ib,η,G,C,H,h,L,100,ceil(Int,L/0.05);bc_case=:simply_supported)
 end
 
 with_theme(theme_latexfonts(),fontsize=24,linewidth=2.5) do
