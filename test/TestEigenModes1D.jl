@@ -56,3 +56,28 @@ u(x,μ,α) = @. α[1]*exp(μ*x) + α[2]*exp(-μ*x) + α[3]*cos(μ*x) + α[4]*sin
 for i ∈ 1:N
   @test ∂ₓ⁴U[i] ≈ U[i,:]*μ[i]^4
 end
+
+# simply supported-simply supported
+N = 10
+n = 100
+L = 10
+x = -L:L/n:L
+μ,U,∂ₓ²U = eigenmodes_1d(:simply_supported,N,L,x)
+
+# Test orthogonality
+δx = L/n
+diagws = 2*δx/3*ones(length(x));
+diagws[1] = δx/3; diagws[2:2:end-1] .= 4*δx/3; diagws[end] = δx/3;
+ws = Diagonal(diagws);
+Orthog = U*ws*U'
+@test maximum(abs,Orthog - I) < 1e-7
+# Check BCs
+@test maximum(abs,U[:,1]) < 1e-10
+@test maximum(abs,U[:,end]) < 1e-10
+@test maximum(abs,∂ₓ²U[:,1]) < 1e-10
+@test maximum(abs,∂ₓ²U[:,end]) < 1e-10
+# Check PDE
+for i ∈ 1:N
+  ∂ₓ⁴U = diag(ForwardDiff.jacobian(x->diag(ForwardDiff.jacobian(x->eigenmodes_1d(:simply_supported,N,L,x)[3][i,:],x)),x))
+  @test ∂ₓ⁴U ≈ U[i,:]*μ[i]^4
+end

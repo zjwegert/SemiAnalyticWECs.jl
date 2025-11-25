@@ -11,13 +11,15 @@ modes are evaluated.
 Possible boundary conditions are:
 - :clamped  => u = 0, ∂ₓu = 0
 - :free     => ∂²ₓu = 0, ∂³ₓu = 0
-- :simply_supported => u = 0, ∂²ₓu = 0 (at present not implemented)
+- :simply_supported => u = 0, ∂²ₓu = 0
 """
 function eigenmodes_1d(bc_case,N,L,x;debug=false)
   if bc_case == (:clamped,:clamped) || bc_case == :clamped
     return _eigenmodes_clamped_clamped(N,L,x;debug)
   elseif bc_case == (:free,:free) || bc_case == :free
     return _eigenmodes_free_free(N,L,x)
+  elseif bc_case == (:simply_supported,:simply_supported) || bc_case == :simply_supported
+    return _eigenmodes_simply_supported_simply_supported(N,L,x)
   else
     @error "Boundary condition case $(bc_case), not yet implemented."
   end
@@ -105,4 +107,23 @@ function _eigenmodes_clamped_clamped(N,L,x;debug)
   else
     return μ,U,∂ₓ²U
   end
+end
+
+# simply supported-simply supported
+
+function _eigenmodes_simply_supported_simply_supported(N,L,xp)
+  u(x,μ) = @. 1/sqrt(L)*sin(μ*x);
+  ∂ₓ²u(x,μ) = @. -μ^2/sqrt(L)*sin(μ*x);
+
+  x= @. xp-L
+  μ = π/L/2*collect(1:N);
+
+  U = zeros(eltype(x),N,length(x));
+  ∂ₓ²U = zeros(eltype(x),N,length(x));
+  for i ∈ eachindex(μ)
+    U[i,:] = u(x,μ[i])
+    ∂ₓ²U[i,:] = ∂ₓ²u(x,μ[i])
+  end
+
+  return μ,U,∂ₓ²U
 end
