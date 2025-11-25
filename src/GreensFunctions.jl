@@ -1,9 +1,3 @@
-using Roots
-using Roots: Newton
-using LinearAlgebra
-using ForwardDiff
-using QuadGK
-
 # Green's function on the surface
 
 """
@@ -122,11 +116,42 @@ function regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)
 end
 
 ∂ = ForwardDiff.derivative # Forward AD is quite efficent here, so I think this is cleanest
+
+"""
+    ∂z_regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)
+
+Compute the z derivative of the regular Green's function for a submerged source based on Append B.2
+of Linton & McIver (2001) (Handbook of mathematical techniques for wave/structure interactions).
+
+In paricular, we compute ∂_z(ϕ - log(r)) where r = sqrt(X² + (z-ζ)²) using AD.
+
+This can be done either using:
+- `method=:residue` : Computes Equation B.38 (Linton & McIver, 2001) using
+  contour integration and residue calculus.
+- `method=:eigenfunction` : Computes Equation B.43 (Linton & McIver, 2001) using
+  eigenfunction expansion method. If this method is used, the number of terms
+  in the series is specified by `N`.
+"""
 function ∂z_regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)
   f(z) = regular_greens_submerged_2d(x,z,ζ,h,K;method,N)
   return ∂(f,z)
 end
 
+"""
+    ∂z∂ζ_regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)
+
+Compute the mixed z-ζ derivative of the regular Green's function for a submerged source based on Append B.2
+of Linton & McIver (2001) (Handbook of mathematical techniques for wave/structure interactions).
+
+In paricular, we compute ∂²zζ(ϕ - log(r)) where r = sqrt(X² + (z-ζ)²) using AD.
+
+This can be done either using:
+- `method=:residue` : Computes Equation B.38 (Linton & McIver, 2001) using
+  contour integration and residue calculus.
+- `method=:eigenfunction` : Computes Equation B.43 (Linton & McIver, 2001) using
+  eigenfunction expansion method. If this method is used, the number of terms
+  in the series is specified by `N`.
+"""
 function ∂z∂ζ_regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)
   g(ζ,z) = regular_greens_submerged_2d(x,z,ζ,h,K;method,N)
   f(ζ) = ∂(z->g(ζ,z),z)
@@ -167,9 +192,3 @@ function _reg_greens_submerged_2d_residue_method(x,z,ζ,h,K)
 
   return - log(r₁) - I₁ - I₂ - I₁_residue
 end
-
-# regular_greens_submerged_2d(5,-2,-3,10,1.1;method=:residue) ≈ regular_greens_submerged_2d(5,-2,-3,10,1.1;method=:eigenfunction,N=100)
-# ∂z_regular_greens_submerged_2d(5,-2,-3,10,1.1;method=:residue) ≈ ∂z_regular_greens_submerged_2d(5,-2,-3,10,1.1;method=:eigenfunction,N=100)
-# ∂z∂ζ_regular_greens_submerged_2d(5,-2,-3,10,1.1;method=:residue) ≈ ∂z∂ζ_regular_greens_submerged_2d(5,-2,-3,10,1.1;method=:eigenfunction,N=100)
-# ∂z_regular_greens_submerged_2d(5,-2,-3,10,1.1;method=:residue) - (0.085855631870347 - 0.020016903112010im)
-# ∂z∂ζ_regular_greens_submerged_2d(5,-2,-3,10,1.1;method=:residue) - (-0.041294670059438 - 0.022018584405564im)

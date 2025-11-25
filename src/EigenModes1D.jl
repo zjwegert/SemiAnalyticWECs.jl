@@ -1,7 +1,3 @@
-using Roots
-using Roots: Newton
-using LinearAlgebra
-
 """
     eigenmodes_1d(bc_case,N,L,x)
 
@@ -15,11 +11,11 @@ modes are evaluated.
 Possible boundary conditions are:
 - :clamped  => u = 0, ∂ₓu = 0
 - :free     => ∂²ₓu = 0, ∂³ₓu = 0
-- :simply_supported => u = 0, ∂²ₓu = 0
+- :simply_supported => u = 0, ∂²ₓu = 0 (at present not implemented)
 """
-function eigenmodes_1d(bc_case,N,L,x)
+function eigenmodes_1d(bc_case,N,L,x;debug=false)
   if bc_case == (:clamped,:clamped) || bc_case == :clamped
-    return _eigenmodes_clamped_clamped(N,L,x)
+    return _eigenmodes_clamped_clamped(N,L,x;debug)
   elseif bc_case == (:free,:free) || bc_case == :free
     return _eigenmodes_free_free(N,L,x)
   else
@@ -30,9 +26,9 @@ end
 # free-free
 
 function _eigenmodes_free_free(N,L,x)
-  μ = zeros(N)
-  U = zeros(N,length(x));
-  ∂ₓ²U = zeros(N,length(x));
+  μ = zeros(eltype(x),N)
+  U = zeros(eltype(x),N,length(x));
+  ∂ₓ²U = zeros(eltype(x),N,length(x));
 
   # Find solutions of det(M(μᵢ)) = 0
   for i in 3:N # first two roots are zero
@@ -68,7 +64,7 @@ end
 
 # clamped-clamped
 
-function _eigenmodes_clamped_clamped(N,L,x)
+function _eigenmodes_clamped_clamped(N,L,x;debug)
   u(x,μ,α) = @. α[1]*exp(μ*x) + α[2]*exp(-μ*x) + α[3]*cos(μ*x) + α[4]*sin(μ*x);
   ∂ₓ²u(x,μ,α) = @. μ^2*(α[1]*exp(μ*x) + α[2]*exp(-μ*x) - α[3]*cos(μ*x) - α[4]*sin(μ*x));
 
@@ -82,8 +78,8 @@ function _eigenmodes_clamped_clamped(N,L,x)
   β(μ,(a,b,c,d)) = 1/(2*μ)*(2*(4*a*b+c^2+d^2)*L*μ+4*(b*(c-d)+a*(c+d))*cosh(L*μ)*sin(L*μ)+
     (c-d)*(c+d)*sin(2*L*μ)+4*(a*(c-d)+b*(c+d))*cos(L*μ)*sinh(L*μ)+2*(a^2+b^2)*sinh(2*L*μ))
 
-  μ = zeros(N)
-  α = [zeros(4) for _ in 1:N];
+  μ = zeros(eltype(x),N)
+  α = [zeros(eltype(x),4) for _ in 1:N];
   for i in 1:N
     j = i + 1
     g(x) = (-1)^j*tan(x)+tanh(x);
@@ -96,13 +92,17 @@ function _eigenmodes_clamped_clamped(N,L,x)
     α[i] .= V[:,P[1]]
   end
 
-  U = zeros(N,length(x))
-  ∂ₓ²U = zeros(N,length(x));
+  U = zeros(eltype(x),N,length(x))
+  ∂ₓ²U = zeros(eltype(x),N,length(x));
   α_hat = @. α/sqrt(β(μ,α));
   for i ∈ eachindex(μ)
     U[i,:] = u(x,μ[i],α_hat[i])
     ∂ₓ²U[i,:] = ∂ₓ²u(x,μ[i],α_hat[i])
   end
 
-  return μ,U,∂ₓ²U
+  if debug
+    return μ,U,∂ₓ²U,α_hat
+  else
+    return μ,U,∂ₓ²U
+  end
 end

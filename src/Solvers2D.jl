@@ -1,7 +1,3 @@
-include("DispersionEquations.jl")
-include("EigenModes1D.jl")
-include("GreensFunctions.jl")
-
 """
     solve_surface_plate_2d(
       ω,D,Ib,ηp,Gp,Cp,H,L,N,n;
@@ -153,7 +149,7 @@ function solve_submerged_plate_2d(
   return_displacements=false,
   bc_case=:clamped
 )
-  A = 1; # incident wave amplitude TODO
+  A = 1; # incident wave amplitude
   α = ω.^2/g
 
   # Calculation points, here we instead use midpoints
@@ -162,7 +158,7 @@ function solve_submerged_plate_2d(
   x = transpose(x[1:end-1] .+ δx/2); # use midpoints
 
   # Compute eigenvalues and eigenmodes for plate
-  λ,u,∂ₓ²u = eigenmodes_1d(bc_case,N,L,x) # TODO: caching
+  λ,u,∂ₓ²u = eigenmodes_1d(bc_case,N,L,x) # TODO: could be cached
   u = transpose(u);
   ∂ₓ²u = transpose(∂ₓ²u);
 

@@ -1,7 +1,3 @@
-using Roots
-using Roots: Newton
-using LinearAlgebra
-
 # Dispersion equation for free surface problem: -α = k*tan(kh)
 """
     dispersion_free_surface(α::Complex, N, h)
