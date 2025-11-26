@@ -42,6 +42,7 @@ function solve_surface_plate_2d(
   return_displacements=false,
   bc_case=:clamped
 )
+  D = D' # Due to choice of exp(-k*x) for incident wave
   np = 2n + 1
   α = ω.^2/g
   A = im*ω/g;
@@ -83,8 +84,8 @@ function solve_surface_plate_2d(
   η_s =  transpose(ξ)*transpose(ϕ_r) + transpose(ϕ_d);
 
   # Compute reflection and transmission coefficients
-  R = -1/(tan(k*H) + k*H*sec(k*H)^2)*transpose(exp.(-k*x)).*(α*ϕ - im*ω*w) ⋅ diag(ws)
-  T = 1 - 1/(tan(k*H) + k*H*sec(k*H)^2)*transpose(exp.(k*x)).*(α*ϕ - im*ω*w) ⋅ diag(ws);
+  R = -1/(tan(k*H) + k*H*sec(k*H)^2)*transpose(exp.(-k*x)).*(α*η_s - im*ω*w) ⋅ diag(ws)
+  T = 1 - 1/(tan(k*H) + k*H*sec(k*H)^2)*transpose(exp.(k*x)).*(α*η_s - im*ω*w) ⋅ diag(ws);
   k = imag(k) # k = k/im;
   Cg = ω/(2*k)*(1+2*k*H/sinh(2*k*H)); # Group velocity
 
@@ -103,6 +104,7 @@ function solve_surface_plate_2d(
   end
 end
 
+solve_surface_plate_2d(ω,D,Ib,ηp,Gp,Cp,H,h,L,N,n;kwargs...) = solve_surface_plate_2d(ω,D,Ib,ηp,Gp,Cp,H,L,N,n;kwargs...)
 
 """
     solve_submerged_plate_2d(

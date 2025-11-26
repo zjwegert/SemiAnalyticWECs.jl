@@ -63,3 +63,5 @@ function PZT5H_material_coefficents(θ)
 
   return (;C11,e31,kappa33,rho)
 end
+
+PZT5H_material_coefficents() = PZT5H_material_coefficents(0.0)
