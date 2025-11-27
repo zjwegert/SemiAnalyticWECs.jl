@@ -52,12 +52,12 @@ Ts = collect(range(3,9,2000));
 
 data = load("$(@__DIR__)/data/pzt_vs_pvdf.jld2")["data"]
 
-# with_theme(theme_latexfonts(),fontsize=24,linewidth=2.5) do
-#   fig = Figure()
-#   ax = Axis(fig[1,1])
-#   _data = data[data.BC .== "simply_supported" .&& data.Problem .== "surface" .&& data.Material .== "PVDF",:]
-#   lines!(ax,Ts,first(_data.P_farfield),label="Far-field Power")
-#   lines!(ax,Ts,first(_data.P_nearfield),label="Near-field Power",linestyle=:dash)
-#   axislegend(ax)
-#   fig
-# end
+with_theme(theme_latexfonts(),fontsize=24,linewidth=2.5) do
+  fig = Figure()
+  ax = Axis(fig[1,1])
+  _data = data[data.BC .== "simply_supported" .&& data.Problem .== "surface" .&& data.Material .== "PVDF",:]
+  lines!(ax,Ts,first(_data.P_farfield),label="Far-field Power")
+  lines!(ax,Ts,first(_data.P_nearfield),label="Near-field Power",linestyle=:dash)
+  axislegend(ax)
+  fig
+end
