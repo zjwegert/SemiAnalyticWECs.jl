@@ -60,7 +60,7 @@ data = load("$(@__DIR__)/data/surface_conductance.jld2")["data"]
 
 fig = with_theme(theme_latexfonts(),fontsize=24,linewidth=3) do
   fig = Figure()
-  ax = Axis(fig[2,1],aspect=3,xlabel="Period (s)",ylabel=L"P~\mathrm{(Wm^{-1})}")
+  ax = Axis(fig[2,1],aspect=3,yscale=log10,xlabel="Period (s)",ylabel=L"P~\mathrm{(Wm^{-1})}")
   for _data in eachrow(data)
     lab = isone(_data.G_coeff) ? L"G=G_0" : L"G=10^{%$(Int(round(log10(_data.G_coeff);sigdigits=1)))}G_0"
     lines!(ax,Ts,_data.P_nearfield,
