@@ -18,7 +18,7 @@ Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 
 [compat]
 BenchmarkTools = "1.6.3"
-CairoMakie = "0.15.7"
+CairoMakie = "0.15"
 DataFrames = "1.8.1"
 FastGaussQuadrature = "1.1.0"
 ForwardDiff = "1.3.0"
