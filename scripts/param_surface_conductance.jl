@@ -53,5 +53,23 @@ Ts = collect(range(3,9,2000));
 # data = DataFrame("Problem"=>problem_names,"Material"=>mat_names,"BC"=>bc_names,"G_coeff"=>G_coeffs,"G_value"=>G_values,"R"=>R_s,"T"=>T_s,"P_farfield"=>P_FFs,"P_nearfield"=>P_NFs);
 # jldsave("$(@__DIR__)/data/surface_conductance.jld2";data)
 
-
+##############################
+### Plotting
+##############################
 data = load("$(@__DIR__)/data/surface_conductance.jld2")["data"]
+
+fig = with_theme(theme_latexfonts(),fontsize=24,linewidth=3) do
+  fig = Figure()
+  ax = Axis(fig[2,1],aspect=3,xlabel="Period (s)",ylabel=L"P~\mathrm{(Wm^{-1})}")
+  for _data in eachrow(data)
+    lab = isone(_data.G_coeff) ? L"G=G_0" : L"G=10^{%$(Int(round(log10(_data.G_coeff);sigdigits=1)))}G_0"
+    lines!(ax,Ts,_data.P_nearfield,
+        label=lab)
+  end
+  L = Legend(fig[1,1],ax,orientation=:horizontal,tellwidth=true)
+  L.nbanks = 1
+  resize_to_layout!(fig)
+  fig
+end
+
+save("$(@__DIR__)/figures/surface_conductance.png",fig;dpi=300)

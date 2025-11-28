@@ -52,5 +52,36 @@ Ts = collect(range(3,9,2000));
 # data = DataFrame("Problem"=>problem_names,"Material"=>mat_names,"BC"=>bc_names,"h"=>h_values,"R"=>R_s,"T"=>T_s,"P_farfield"=>P_FFs,"P_nearfield"=>P_NFs);
 # jldsave("$(@__DIR__)/data/param_depth.jld2";data)
 
-
+##############################
+### Plotting
+##############################
 data = load("$(@__DIR__)/data/param_depth.jld2")["data"]
+
+fig_h_less_1 = with_theme(theme_latexfonts(),fontsize=24,linewidth=3) do
+  fig = Figure()
+  ax = Axis(fig[2,1],aspect=3,yscale=log10,xlabel="Period (s)",ylabel=L"P~\mathrm{(Wm^{-1})}")
+  for _data in eachrow(data[data.h .< 1,:])
+    lines!(ax,Ts,_data.P_nearfield,
+        label=L"h=%$(_data.h)")
+  end
+  L = Legend(fig[1,1],ax,orientation=:horizontal,tellwidth=true)
+  L.nbanks = 1
+  resize_to_layout!(fig)
+  fig
+end;
+
+fig_h_geq_1 = with_theme(theme_latexfonts(),fontsize=24,linewidth=3) do
+  fig = Figure()
+  ax = Axis(fig[2,1],aspect=3,yscale=log10,xlabel="Period (s)",ylabel=L"P~\mathrm{(Wm^{-1})}")
+  for _data in eachrow(data[data.h .>= 1,:])
+    lines!(ax,Ts,_data.P_nearfield,
+        label=L"h=%$(_data.h)")
+  end
+  L = Legend(fig[1,1],ax,orientation=:horizontal,tellwidth=true)
+  L.nbanks = 1
+  resize_to_layout!(fig)
+  fig
+end
+
+save("$(@__DIR__)/figures/depth_less_1.png",fig_h_less_1;dpi=300)
+save("$(@__DIR__)/figures/depth_geq_1.png",fig_h_geq_1;dpi=300)

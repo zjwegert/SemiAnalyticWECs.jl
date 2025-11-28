@@ -49,15 +49,44 @@ Ts = collect(range(3,9,2000));
 # data = DataFrame("Problem"=>problem_names,"Material"=>mat_names,"BC"=>bc_names,"R"=>R_s,"T"=>T_s,"P_farfield"=>P_FFs,"P_nearfield"=>P_NFs);
 # jldsave("$(@__DIR__)/data/pzt_vs_pvdf.jld2";data)
 
-
+##############################
+### Plotting
+##############################
 data = load("$(@__DIR__)/data/pzt_vs_pvdf.jld2")["data"]
 
-with_theme(theme_latexfonts(),fontsize=24,linewidth=2.5) do
+fig_submerged = with_theme(theme_latexfonts(),fontsize=24,linewidth=3) do
   fig = Figure()
-  ax = Axis(fig[1,1])
-  _data = data[data.BC .== "simply_supported" .&& data.Problem .== "surface" .&& data.Material .== "PVDF",:]
-  lines!(ax,Ts,first(_data.P_farfield),label="Far-field Power")
-  lines!(ax,Ts,first(_data.P_nearfield),label="Near-field Power",linestyle=:dash)
-  axislegend(ax)
+  ax = Axis(fig[2,1],aspect=3,xlabel="Period (s)",ylabel=L"P~\mathrm{(Wm^{-1})}")
+  _data = data[data.BC .== "simply_supported" .&& data.Problem .== "submerged" .&& data.Material .== "PVDF",:]
+  lines!(ax,Ts,first(_data.P_nearfield),label="PVDF (Simply supported)")
+  _data = data[data.BC .== "clamped" .&& data.Problem .== "submerged" .&& data.Material .== "PVDF",:]
+  lines!(ax,Ts,first(_data.P_nearfield),label="PVDF (Clamped)")
+  _data = data[data.BC .== "simply_supported" .&& data.Problem .== "submerged" .&& data.Material .== "PZT5H",:]
+  lines!(ax,Ts,first(_data.P_nearfield),label="PZT5H (Simply supported)",linestyle=:dash)
+  _data = data[data.BC .== "clamped" .&& data.Problem .== "submerged" .&& data.Material .== "PZT5H",:]
+  lines!(ax,Ts,first(_data.P_nearfield),label="PZT5H (Clamped)",linestyle=:dash)
+  L = Legend(fig[1,1],ax,orientation=:horizontal,tellwidth=true)
+  L.nbanks = 2
+  resize_to_layout!(fig)
   fig
-end
+end;
+
+fig_surface = with_theme(theme_latexfonts(),fontsize=24,linewidth=3) do
+  fig = Figure()
+  ax = Axis(fig[2,1],aspect=3,yscale=log10,xlabel="Period (s)",ylabel=L"P~\mathrm{(Wm^{-1})}")
+  _data = data[data.BC .== "simply_supported" .&& data.Problem .== "surface" .&& data.Material .== "PVDF",:]
+  lines!(ax,Ts,first(_data.P_nearfield),label="PVDF (Simply supported)")
+  _data = data[data.BC .== "clamped" .&& data.Problem .== "surface" .&& data.Material .== "PVDF",:]
+  lines!(ax,Ts,first(_data.P_nearfield),label="PVDF (Clamped)")
+  _data = data[data.BC .== "simply_supported" .&& data.Problem .== "surface" .&& data.Material .== "PZT5H",:]
+  lines!(ax,Ts,first(_data.P_nearfield),label="PZT5H (Simply supported)",linestyle=:dash)
+  _data = data[data.BC .== "clamped" .&& data.Problem .== "surface" .&& data.Material .== "PZT5H",:]
+  lines!(ax,Ts,first(_data.P_nearfield),label="PZT5H (Clamped)",linestyle=:dash)
+  L = Legend(fig[1,1],ax,orientation=:horizontal,tellwidth=true)
+  L.nbanks = 2
+  resize_to_layout!(fig)
+  fig
+end;
+
+save("$(@__DIR__)/figures/PZT_vs_PVDF_surface.png",fig_surface;dpi=300)
+save("$(@__DIR__)/figures/PZT_vs_PVDF_submerged.png",fig_submerged;dpi=300)
