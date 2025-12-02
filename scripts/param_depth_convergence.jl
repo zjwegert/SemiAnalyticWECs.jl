@@ -16,7 +16,7 @@ P_FFs = Vector{Float64}[]; P_NFs = Vector{Float64}[];
 mat_names = String[]; bc_names = String[]; problem_names = String[];
 h_values = Float64[]; δxs = Float64[]; modess = Int[];
 
-for h in (0.0085,0.0065)#0.01,0.0075,0.005)
+for h in (0.01,0.0085,0.0075,0.0065,0.005)
   for modes in (100,)
     for δx in (h/10,h/20)
       for mat in (PZT5H_material_coefficents,)
@@ -54,7 +54,7 @@ for h in (0.0085,0.0065)#0.01,0.0075,0.005)
 end
 
 data_fine = DataFrame("Problem"=>problem_names,"Material"=>mat_names,"BC"=>bc_names,"h"=>h_values, "δx"=>δxs, "modes"=>modess, "R"=>R_s,"T"=>T_s,"P_farfield"=>P_FFs,"P_nearfield"=>P_NFs);
-jldsave("$(@__DIR__)/data/convergence.jld2";data_fine)
+# jldsave("$(@__DIR__)/data/convergence.jld2";data_fine)
 
 #  h = 0.01, δx=h/10: 1089.0775171154764
 #  h = 0.01, δx=h/20: 1088.4415470517333
@@ -70,22 +70,39 @@ jldsave("$(@__DIR__)/data/convergence.jld2";data_fine)
 ##############################
 ### Plotting
 ##############################
+error("Don't run this right now")
 data_fine = load("$(@__DIR__)/data/convergence.jld2")["data_fine"]
 
 f = with_theme(theme_latexfonts(),fontsize=24,linewidth=3) do
   fig = Figure()
-  ax = Axis(fig[2,1],aspect=2,xlabel=L"h",ylabel=L"P~\mathrm{(Wm^{-1})}")
+  ax = Axis(fig[2,1],aspect=2,xlabel=L"h",ylabel=L"|R|")
   ax.xreversed = true
   _d = data_fine[data_fine.δx .== data_fine.h/10,:]
   p = sortperm(_d.h)
-  lines!(ax,_d.h[p],first.(_d.P_nearfield)[p],    label=L"\delta_x=h/10")
+  lines!(ax,_d.h[p],abs.(first.(_d.R)[p]),    label=L"\delta_x=h/10")
   _d = data_fine[data_fine.δx .== data_fine.h/20,:]
   p = sortperm(_d.h)
-  lines!(ax,_d.h[p],first.(_d.P_nearfield)[p],label=L"\delta_x=h/20",linestyle=:dash)
+  lines!(ax,_d.h[p],abs.(first.(_d.R)[p]),label=L"\delta_x=h/20",linestyle=:dash)
   L = Legend(fig[1,1],ax,orientation=:horizontal)
   # L.nbanks = 1
   # resize_to_layout!(fig)
   fig
-end;
+end
 
-save("$(@__DIR__)/figures/convergence.png",f;dpi=300)
+f = with_theme(theme_latexfonts(),fontsize=24,linewidth=3) do
+  fig = Figure()
+  ax = Axis(fig[2,1],aspect=2,xlabel=L"h",ylabel=L"|T|")
+  ax.xreversed = true
+  _d = data_fine[data_fine.δx .== data_fine.h/10,:]
+  p = sortperm(_d.h)
+  lines!(ax,_d.h[p],abs.(first.(_d.R)[p]),    label=L"\delta_x=h/10")
+  _d = data_fine[data_fine.δx .== data_fine.h/20,:]
+  p = sortperm(_d.h)
+  lines!(ax,_d.h[p],abs.(first.(_d.R)[p]),label=L"\delta_x=h/20",linestyle=:dash)
+  L = Legend(fig[1,1],ax,orientation=:horizontal)
+  # L.nbanks = 1
+  # resize_to_layout!(fig)
+  fig
+end
+
+# save("$(@__DIR__)/figures/convergence.png",f;dpi=300)
