@@ -16,9 +16,9 @@ P_FFs = Vector{Float64}[]; P_NFs = Vector{Float64}[];
 mat_names = String[]; bc_names = String[]; problem_names = String[];
 h_values = Float64[]; δxs = Float64[]; modess = Int[];
 
-for δx in (0.1,0.01,0.001)
-  for modes in (20,50,100)
-    for h in (1e-4,1e-3,1e-2,1e-1,1,2)
+for h in (0.01,0.0085,0.0075,0.0065,0.005)
+  for modes in (100,)
+    for δx in (h/10,h/20)
       for mat in (PZT5H_material_coefficents,)
         for bc in (:simply_supported,)
           for solver in (solve_submerged_plate_2d,)
@@ -54,49 +54,55 @@ for δx in (0.1,0.01,0.001)
 end
 
 data_fine = DataFrame("Problem"=>problem_names,"Material"=>mat_names,"BC"=>bc_names,"h"=>h_values, "δx"=>δxs, "modes"=>modess, "R"=>R_s,"T"=>T_s,"P_farfield"=>P_FFs,"P_nearfield"=>P_NFs);
+# jldsave("$(@__DIR__)/data/convergence.jld2";data_fine)
 
-data_fine[data_fine.modes .== 100 .&& data_fine.h .== 1e-3,:].P_farfield
+#  h = 0.01, δx=h/10: 1089.0775171154764
+#  h = 0.01, δx=h/20: 1088.4415470517333
+#  h = 0.0085, δx=h/10: 2278.4019197695816
+#  h = 0.0085, δx=h/20: 2282.5638727718756
+#  h = 0.0075, δx=h/10: 1408.566322861937
+#  h = 0.0075, δx=h/20: 1404.8881220775806
+#  h = 0.0065, δx=h/10: 804.1568142349087
+#  h = 0.005, δx=h/10: 627.9119153540815
 
-data_fine.P_nearfield[1]
-# jldsave("$(@__DIR__)/data/param_depth.jld2";data)
+# | P_farfield - P_nearfield | ~ 1e-10
 
 ##############################
 ### Plotting
 ##############################
-data = load("$(@__DIR__)/data/param_depth.jld2")["data"]
-data[4,:].P_nearfield
+error("Don't run this right now")
+data_fine = load("$(@__DIR__)/data/convergence.jld2")["data_fine"]
 
+f = with_theme(theme_latexfonts(),fontsize=24,linewidth=3) do
+  fig = Figure()
+  ax = Axis(fig[2,1],aspect=2,xlabel=L"h",ylabel=L"|R|")
+  ax.xreversed = true
+  _d = data_fine[data_fine.δx .== data_fine.h/10,:]
+  p = sortperm(_d.h)
+  lines!(ax,_d.h[p],abs.(first.(_d.R)[p]),    label=L"\delta_x=h/10")
+  _d = data_fine[data_fine.δx .== data_fine.h/20,:]
+  p = sortperm(_d.h)
+  lines!(ax,_d.h[p],abs.(first.(_d.R)[p]),label=L"\delta_x=h/20",linestyle=:dash)
+  L = Legend(fig[1,1],ax,orientation=:horizontal)
+  # L.nbanks = 1
+  # resize_to_layout!(fig)
+  fig
+end
 
-data_surface = load("$(@__DIR__)/data/pzt_vs_pvdf.jld2")["data"]
-data_surface[6,:].P_nearfield
+f = with_theme(theme_latexfonts(),fontsize=24,linewidth=3) do
+  fig = Figure()
+  ax = Axis(fig[2,1],aspect=2,xlabel=L"h",ylabel=L"|T|")
+  ax.xreversed = true
+  _d = data_fine[data_fine.δx .== data_fine.h/10,:]
+  p = sortperm(_d.h)
+  lines!(ax,_d.h[p],abs.(first.(_d.R)[p]),    label=L"\delta_x=h/10")
+  _d = data_fine[data_fine.δx .== data_fine.h/20,:]
+  p = sortperm(_d.h)
+  lines!(ax,_d.h[p],abs.(first.(_d.R)[p]),label=L"\delta_x=h/20",linestyle=:dash)
+  L = Legend(fig[1,1],ax,orientation=:horizontal)
+  # L.nbanks = 1
+  # resize_to_layout!(fig)
+  fig
+end
 
-
-
-# fig_h_less_1 = with_theme(theme_latexfonts(),fontsize=24,linewidth=3) do
-#   fig = Figure()
-#   ax = Axis(fig[2,1],aspect=3,yscale=log10,xlabel="Period (s)",ylabel=L"P~\mathrm{(Wm^{-1})}")
-#   for _data in eachrow(data[data.h .< 1,:])
-#     lines!(ax,Ts,_data.P_nearfield,
-#         label=L"h=%$(_data.h)")
-#   end
-#   L = Legend(fig[1,1],ax,orientation=:horizontal,tellwidth=true)
-#   L.nbanks = 1
-#   resize_to_layout!(fig)
-#   fig
-# end;
-
-# fig_h_geq_1 = with_theme(theme_latexfonts(),fontsize=24,linewidth=3) do
-#   fig = Figure()
-#   ax = Axis(fig[2,1],aspect=3,yscale=log10,xlabel="Period (s)",ylabel=L"P~\mathrm{(Wm^{-1})}")
-#   for _data in eachrow(data[data.h .>= 1,:])
-#     lines!(ax,Ts,_data.P_nearfield,
-#         label=L"h=%$(_data.h)")
-#   end
-#   L = Legend(fig[1,1],ax,orientation=:horizontal,tellwidth=true)
-#   L.nbanks = 1
-#   resize_to_layout!(fig)
-#   fig
-# end
-
-# save("$(@__DIR__)/figures/depth_less_1.png",fig_h_less_1;dpi=300)
-# save("$(@__DIR__)/figures/depth_geq_1.png",fig_h_geq_1;dpi=300)
+# save("$(@__DIR__)/figures/convergence.png",f;dpi=300)
