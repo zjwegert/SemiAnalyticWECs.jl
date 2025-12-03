@@ -45,7 +45,6 @@ function solve_surface_plate_2d(
   D = D' # Due to choice of exp(-k*x) for incident wave
   np = 2n + 1
   α = ω.^2/g
-  A = im*ω/g;
 
   # Calculation points
   x = -L:L/n:L;
@@ -90,11 +89,12 @@ function solve_surface_plate_2d(
   Cg = ω/(2*k)*(1+2*k*H/sinh(2*k*H)); # Group velocity
 
   # Far-field power takeoff
+  A = 1;
   P_farfield = 1/2*ρ_w*g*Cg*abs(A)^2*(1 - abs(R)^2 - abs(T)^2);
 
   # Compute near-field power takeoff
   ∂ₓ²w = transpose(ξ)*∂ₓ²u;
-  P_nearfield = Gp*ω^2/2*abs.(ηp*∂ₓ²w/(Gp-im*ω*Cp)).^2 ⋅ diag(ws);
+  P_nearfield = Gp*ω^2/2*abs.(ηp*∂ₓ²w/(Gp-im*ω*Cp)).^2 ⋅ diag(ws) * (g/ω)^2; # normalise by (g/ω)^2
 
   if return_displacements
     v = im*ω*ηp/(Gp-im*ω*Cp)*∂ₓ²w; # voltage

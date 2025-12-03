@@ -60,19 +60,13 @@ data = load("$(@__DIR__)/data/poling_angle.jld2")["data"]
 
 fig = with_theme(theme_latexfonts(),fontsize=28,linewidth=4) do
   fig = Figure(size = (1400, 400),figure_padding = (1,95,1,1))
-  ax = Axis(fig[2,1],aspect=2,yscale=log10,xlabel="Period (s)",ylabel=L"P~\mathrm{(Wm^{-1})}",xticks=3:9)
-  for _data in eachrow(data[[1,3:end...],:])
-    _data.θ == pi/2 && continue
-    lines!(ax,Ts,_data.P_nearfield,
-        label=L"θ=%$(round(_data.θ*180/π;digits=1))^\circ")
-  end
-  ax = Axis(fig[2,2],aspect=2,yscale=log10,xlabel="Period (s)",ylabel=L"E_f",xticks=3:9)
+  ax = Axis(fig[2,1],aspect=2,yscale=log10,xlabel="Period (s)",ylabel=L"1 -|R|^2-|T|^2",xticks=3:9)
   for _data in eachrow(data[[1,3:end...],:])
     _data.θ == pi/2 && continue
     lines!(ax,Ts,1 .- abs.(_data.R).^2 .- abs.(_data.T).^2,
         label=L"θ=%$(round(_data.θ*180/π;digits=1))^\circ")
   end
-  L = Legend(fig[1,1:2],ax,orientation=:horizontal)#,tellwidth=true)
+  L = Legend(fig[1,1],ax,orientation=:horizontal)#,tellwidth=true)
   # L.nbanks = 1
   # resize_to_layout!(fig)
   fig
