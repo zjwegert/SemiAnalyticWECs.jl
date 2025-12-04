@@ -192,3 +192,37 @@ function _reg_greens_submerged_2d_residue_method(x,z,ζ,h,K)
 
   return - log(r₁) - I₁ - I₂ - I₁_residue
 end
+
+# Green's function submerged source (3D)
+
+function _reg_greens_submerged_3d(R,z,ζ,K,H)
+  k₀ = first(dispersion_free_surface(K,0,H))
+  N₀² = @. 1/2*(1 - sin(k₀*H)^2/K/H)
+  k = k₀/im
+  r₂ = sqrt(R^2+(z+ζ+2H)^2)
+
+  function g(μ)
+    v = (μ + K)*exp(-μ*H)*cosh(μ*(z+H))*cosh(μ*(ζ+H))/(μ*sinh(μ*H) - K*cosh(μ*H))
+    if isnan(v) || isinf(v)
+      # Use asymptotic expansion for large μ
+      return  1/2*(μ + K)*exp(μ*(z + ζ))/(μ - K)
+    else
+      return v
+    end
+  end
+  # Compute integrals
+  F₁(μ) = besselh(0,1,μ*R)*g(μ)
+  I₁ = quadgk(R -> exp(im*π/4)*F₁(R*exp(im*π/4)), 0, Inf)[1]
+  I₁_residue = π*im/(H*N₀²)*cosh(k*(z+H))*cosh(k*(ζ+H))*besselh(0,1,k*R);
+
+  F₂(μ) = besselh(0,2,μ*R)*g(μ)
+  I₂ = quadgk(R -> exp(-im*π/4)*F₂(R*exp(-im*π/4)), 0.0, Inf)[1]
+
+  return 1/r₂ + I₁ + I₂ + I₁_residue
+end
+
+function ∂z∂ζ_reg_greens_submerged_3d(R,z,ζ,K,H)
+  g(ζ,z) = regular_greens_submerged_3d(R,z,ζ,K,H)
+  f(ζ) = ∂(z->g(ζ,z),z)
+  return ∂(f,ζ)
+end

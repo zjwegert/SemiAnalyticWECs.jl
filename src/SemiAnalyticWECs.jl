@@ -5,6 +5,7 @@ using Roots: Newton
 using LinearAlgebra
 using ForwardDiff
 using QuadGK
+using SpecialFunctions
 
 include("Materials.jl")
 export PVDF_TechMan_material_coefficents
