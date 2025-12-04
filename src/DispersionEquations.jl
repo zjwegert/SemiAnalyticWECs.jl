@@ -59,7 +59,7 @@ function dispersion_free_surface(α::Real, N, h=1.0)
   α *= h;
   k = zeros(ComplexF64,N+1);
 
-  # take positive real root
+  # take positive real root 
   k[1] = abs(dispersion_free_root(α,sqrt(α)));
 
   f(z) = α*cos(z)+z*sin(z);

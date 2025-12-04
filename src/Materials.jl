@@ -55,7 +55,7 @@ function PZT5H_material_coefficents(θ)
   # Plane-stress formulation
   Sᴱ = inv(C); # Compliance at constant electric field
   d = e*Sᴱ; # Piezoelectric strain coefficients
-  Kᵀ = kappa + d*transpose(e); # Permittivity at constant stress
+  Kᵀ = kappa + d*transpose(e); # Permittivity at constant stress 
 
   C11=(8*Sᴱ[2,2])/(Sᴱ[2,2]*Sᴱ[5,5]-sin(θ)^4*(8*Sᴱ[2,3]^2-8*Sᴱ[2,2]*Sᴱ[3,3]+Sᴱ[2,2]*Sᴱ[5,5])+2*cos(θ)^2*sin(θ)^2*(8*Sᴱ[1,3]*Sᴱ[2,2]-8*Sᴱ[1,2]*Sᴱ[2,3]+3*Sᴱ[2,2]*Sᴱ[5,5])-cos(θ)^4*(8*Sᴱ[1,2]^2+Sᴱ[2,2]*(-8*Sᴱ[1,1]+Sᴱ[5,5])))
   e31=(8*(cos(θ)^3*(d[3,2]*Sᴱ[1,2]-d[3,1]*Sᴱ[2,2])+cos(θ)*sin(θ)^2*(d[1,5]*Sᴱ[2,2]-d[3,3]*Sᴱ[2,2]+d[3,2]*Sᴱ[2,3])))/(-Sᴱ[2,2]*Sᴱ[5,5]+sin(θ)^4*(8*Sᴱ[2,3]^2-8*Sᴱ[2,2]*Sᴱ[3,3]+Sᴱ[2,2]*Sᴱ[5,5])-2*cos(θ)^2*sin(θ)^2*(8*Sᴱ[1,3]*Sᴱ[2,2]-8*Sᴱ[1,2]*Sᴱ[2,3]+3*Sᴱ[2,2]*Sᴱ[5,5])+cos(θ)^4*(8*Sᴱ[1,2]^2+Sᴱ[2,2]*(-8*Sᴱ[1,1]+Sᴱ[5,5])))

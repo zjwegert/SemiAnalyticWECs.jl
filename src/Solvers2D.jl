@@ -164,7 +164,7 @@ function solve_submerged_plate_2d(
   u = transpose(u);
   ∂ₓ²u = transpose(∂ₓ²u);
 
-  # Computing BIE matrix
+  # Computing BIE matrix 
   k = first(dispersion_free_surface(α,0,H));
   N₀² = 1/2*(1 - (sin(k*H)^2)/α/H);
   k = k/im;

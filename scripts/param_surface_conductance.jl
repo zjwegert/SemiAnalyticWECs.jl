@@ -66,7 +66,7 @@ fig = with_theme(theme_latexfonts(),fontsize=28,linewidth=4) do
     lines!(ax,Ts,1 .- abs.(_data.R).^2 .- abs.(_data.T).^2,
         label=lab)
   end
-  L = Legend(fig[1,1],ax,orientation=:horizontal)#,tellwidth=true)
+  L = Legend(fig[1,1],ax,orientation=:horizontal)#,tellwidth=true) 
   # L.nbanks = 1
   # resize_to_layout!(fig)
   fig

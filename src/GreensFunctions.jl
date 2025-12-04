@@ -193,7 +193,7 @@ function _reg_greens_submerged_2d_residue_method(x,z,ζ,h,K)
   return - log(r₁) - I₁ - I₂ - I₁_residue
 end
 
-# Green's function submerged source (3D)
+# Green's function submerged source (3D) 
 
 function _reg_greens_submerged_3d(R,z,ζ,K,H)
   k₀ = first(dispersion_free_surface(K,0,H))

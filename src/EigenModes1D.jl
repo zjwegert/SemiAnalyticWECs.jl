@@ -71,7 +71,7 @@ function _eigenmodes_clamped_clamped(N,L,x;debug)
   ∂ₓ²u(x,μ,α) = @. μ^2*(α[1]*exp(μ*x) + α[2]*exp(-μ*x) - α[3]*cos(μ*x) - α[4]*sin(μ*x));
 
   M(μ) = [
-    exp(-L*μ)	   exp(L*μ)	       cos(L*μ)	  -sin(L*μ) #   u(−L)=0
+    exp(-L*μ)	   exp(L*μ)	       cos(L*μ)	  -sin(L*μ) #   u(−L)=0 
     exp(L*μ)	   exp(-L*μ)	     cos(L*μ)	   sin(L*μ) #    u(L)=0
     exp(-L*μ)*μ	-exp(L*μ)*μ	   μ*sin(L*μ)	 μ*cos(L*μ) # ∂ₓu(−L)=0
     exp(L*μ)*μ	-exp(-L*μ)*μ  -μ*sin(L*μ)  μ*cos(L*μ) #  ∂ₓu(L)=0

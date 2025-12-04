@@ -1,5 +1,5 @@
 using SemiAnalyticWECs
-using Test
+using Test 
 
 @test dispersion_free_surface(0.1, 10, 1) ≈ dispersion_free_surface(0.1+0im, 10, 1) # Real vs Complex input
 @test dispersion_free_surface(0.1, 10, sqrt(10)) ≈ dispersion_free_surface(0.1+0im, 10, sqrt(10)) # Real vs Complex input

@@ -1,5 +1,5 @@
 using SemiAnalyticWECs
-using Test
+using Test 
 
 @test regular_greens_submerged_2d(5,-2,-3,10,1.1;method=:residue) ≈ regular_greens_submerged_2d(5,-2,-3,10,1.1;method=:eigenfunction,N=100)
 @test ∂z_regular_greens_submerged_2d(5,-2,-3,10,1.1;method=:residue) ≈ ∂z_regular_greens_submerged_2d(5,-2,-3,10,1.1;method=:eigenfunction,N=100)

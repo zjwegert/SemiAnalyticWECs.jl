@@ -4,7 +4,7 @@ using Roots
 using Roots: Newton
 using LinearAlgebra
 using ForwardDiff
-using QuadGK
+using QuadGK 
 using SpecialFunctions
 
 include("Materials.jl")
