@@ -5,7 +5,7 @@
 ## Installation
 The package can be installed using the Julia package manager: type `]` in the Julia REPL to enter package mode, and install using
 ```julia
-pkg> add https://github.com/CMOE-TUDelft/TheGeneralizedSBM.jl
+pkg> add https://github.com/zjwegert/SemiAnalyticWECs.jl
 ```
 
 ## Usage
