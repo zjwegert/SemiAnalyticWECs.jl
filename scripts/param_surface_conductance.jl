@@ -62,14 +62,14 @@ fig = with_theme(theme_latexfonts(),fontsize=28,linewidth=4) do
   fig = Figure(size = (1400, 400),figure_padding = (1,99,1,1))
   ax = Axis(fig[2,1],aspect=2,yscale=log10,xlabel="Period (s)",ylabel=L"1 -|R|^2-|T|^2",xticks=3:9)
   for _data in eachrow(data[data.Material .== "PVDF",:])
-    lab = L"G=%$(_data.G_coeff)G_0"
+    lab = L"G/C=%$(_data.G_coeff)"
     lines!(ax,Ts,1 .- abs.(_data.R).^2 .- abs.(_data.T).^2,
         label=lab)
   end
   ylims!(ax,0.5e-4,5e-1)
   ax = Axis(fig[2,2],aspect=2,yscale=log10,xlabel="Period (s)",ylabel=L"1 -|R|^2-|T|^2",xticks=3:9)
   for _data in eachrow(data[data.Material .== "PZT5H",:])
-    lab = L"G=%$(_data.G_coeff)G_0"
+    lab = L"G/C=%$(_data.G_coeff)"
     lines!(ax,Ts,1 .- abs.(_data.R).^2 .- abs.(_data.T).^2,
         label=lab)
   end
