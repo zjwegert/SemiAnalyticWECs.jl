@@ -10,7 +10,6 @@ d0 = 0.01;
 rho0 = 1250;
 Ts = collect(range(3,9,2000));
 
-## Uncomment to re-run
 R_s = Vector{ComplexF64}[]; T_s = Vector{ComplexF64}[];
 P_FFs = Vector{Float64}[]; P_NFs = Vector{Float64}[];
 mat_names = String[]; bc_names = String[]; problem_names = String[];
@@ -51,12 +50,12 @@ for h in (0.05,0.1,1,2,5,8)
 end
 
 data = DataFrame("Problem"=>problem_names,"Material"=>mat_names,"BC"=>bc_names,"h"=>h_values,"R"=>R_s,"T"=>T_s,"P_farfield"=>P_FFs,"P_nearfield"=>P_NFs);
-jldsave("$(@__DIR__)/data/param_depth.jld2";data)
+# jldsave("$(@__DIR__)/data/param_depth.jld2";data)
 
-############################## 
+##############################
 ### Plotting
 ##############################
-data = load("$(@__DIR__)/data/param_depth.jld2")["data"]
+# data = load("$(@__DIR__)/data/param_depth.jld2")["data"]
 
 _data_surface = load("$(@__DIR__)/data/pzt_vs_pvdf.jld2")["data"]
 data_surface = _data_surface[_data_surface.Problem .== "surface" .&& _data_surface.BC .== "simply_supported",:]
@@ -78,10 +77,9 @@ fig = with_theme(theme_latexfonts(),fontsize=28,linewidth=4) do
   end
   data_surf = data_surface[data_surface.Material .== "PZT5H",:]
   lines!(ax,Ts,1 .- abs.(first(data_surf.R)).^2 .- abs.(first(data_surf.T)).^2,label=L"h=0.0",linestyle=:dash)
-  L = Legend(fig[1,1:2],ax,orientation=:horizontal)#,tellwidth=true)
+  L = Legend(fig[1,1:2],ax,orientation=:horizontal)
   ylims!(ax,0.5e-5,6e-1)
-  # resize_to_layout!(fig)
   fig
 end
 
-save("$(@__DIR__)/figures/depth.png",fig;dpi=300)
+# save("$(@__DIR__)/figures/depth.png",fig;dpi=300)

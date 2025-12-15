@@ -11,7 +11,6 @@ d0 = 0.01;
 rho0 = 1250;
 Ts = collect(range(3,9,2000));
 
-## Uncomment to re-run
 R_s = Vector{ComplexF64}[]; T_s = Vector{ComplexF64}[];
 P_FFs = Vector{Float64}[]; P_NFs = Vector{Float64}[];
 mat_names = String[]; bc_names = String[]; problem_names = String[];
@@ -51,12 +50,12 @@ for coeff in (0.2,0.5,1,2,5)
 end
 
 data = DataFrame("Problem"=>problem_names,"Material"=>mat_names,"BC"=>bc_names,"G_coeff"=>G_coeffs,"G_value"=>G_values,"R"=>R_s,"T"=>T_s,"P_farfield"=>P_FFs,"P_nearfield"=>P_NFs);
-jldsave("$(@__DIR__)/data/surface_conductance.jld2";data)
+# jldsave("$(@__DIR__)/data/surface_conductance.jld2";data)
 
 ##############################
 ### Plotting
 ##############################
-data = load("$(@__DIR__)/data/surface_conductance.jld2")["data"]
+# data = load("$(@__DIR__)/data/surface_conductance.jld2")["data"]
 
 fig = with_theme(theme_latexfonts(),fontsize=28,linewidth=4) do
   fig = Figure(size = (1400, 400),figure_padding = (1,99,1,1))
@@ -74,10 +73,8 @@ fig = with_theme(theme_latexfonts(),fontsize=28,linewidth=4) do
         label=lab)
   end
   ylims!(ax,0.5e-4,5e-1)
-  L = Legend(fig[1,1:2],ax,orientation=:horizontal)#,tellwidth=true) 
-  # L.nbanks = 1
-  # resize_to_layout!(fig)
+  L = Legend(fig[1,1:2],ax,orientation=:horizontal)
   fig
 end
 
-save("$(@__DIR__)/figures/surface_conductance.png",fig;dpi=300)
+# save("$(@__DIR__)/figures/surface_conductance.png",fig;dpi=300)
