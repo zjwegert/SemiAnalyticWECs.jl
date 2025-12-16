@@ -1,5 +1,5 @@
 using SemiAnalyticWECs
-using LinearAlgebra 
+using LinearAlgebra
 using Test
 using ForwardDiff
 
@@ -8,7 +8,7 @@ N = 10
 n = 100
 L = 10
 x = -L:L/n:L
-μ,U,∂ₓ²U = eigenmodes_1d(:free,N,L,x)
+μ,U,∂ₓ²U,∂ₓ⁴U = eigenmodes_1d(:free,N,L,x)
 
 # Test orthogonality
 δx = L/n
@@ -34,7 +34,7 @@ N = 10
 n = 100
 L = 10
 x = -L:L/n:L
-μ,U,∂ₓ²U,α_hat = eigenmodes_1d(:clamped,N,L,x;debug=true)
+μ,U,∂ₓ²U,∂ₓ⁴U,α_hat = eigenmodes_1d(:clamped,N,L,x;debug=true)
 
 # Test orthogonality
 δx = L/n
@@ -62,7 +62,7 @@ N = 10
 n = 100
 L = 10
 x = -L:L/n:L
-μ,U,∂ₓ²U = eigenmodes_1d(:simply_supported,N,L,x)
+μ,U,∂ₓ²U,∂ₓ⁴U = eigenmodes_1d(:simply_supported,N,L,x)
 
 # Test orthogonality
 δx = L/n

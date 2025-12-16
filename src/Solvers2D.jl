@@ -50,7 +50,7 @@ function solve_surface_plate_2d(
   x = -L:L/n:L;
 
   # Compute eigenvalues and eigenmodes for plate
-  λ,u,∂ₓ²u = eigenmodes_1d(bc_case,N,L,x)
+  λ,u,∂ₓ²u,_ = eigenmodes_1d(bc_case,N,L,x)
 
   # Calculate free-surface Green function
   G = matrix_G_surface(α,H,L,n);
@@ -160,9 +160,10 @@ function solve_submerged_plate_2d(
   x = transpose(x[1:end-1] .+ δx/2); # use midpoints
 
   # Compute eigenvalues and eigenmodes for plate
-  λ,u,∂ₓ²u = eigenmodes_1d(bc_case,N,L,x) # TODO: could be cached
+  λ,u,∂ₓ²u,∂ₓ⁴u = eigenmodes_1d(bc_case,N,L,x) # TODO: could be cached
   u = transpose(u);
   ∂ₓ²u = transpose(∂ₓ²u);
+  ∂ₓ⁴u = transpose(∂ₓ⁴u);
 
   # Computing BIE matrix
   k = first(dispersion_free_surface(α,0,H));
@@ -208,6 +209,7 @@ function solve_submerged_plate_2d(
 
   # Near-field power takeoff
   ∂ₓ²w = ∂ₓ²u*c;
+  ∂ₓ⁴w = ∂ₓ⁴u*c;
   P_nearfield = Gp*ω^2/2*abs(ηp/(Gp-im*ω*Cp))^2*(abs(first(∂ₓ²w'*∂ₓ²w))*δx);
 
   if !return_displacements
@@ -231,6 +233,6 @@ function solve_submerged_plate_2d(
     η_sc = -im*ω/g*dzG*ϕ_jump*δx;
     η_s = η_inc+η_sc;
 
-    return (;x, XF, R, T, P_farfield, P_nearfield, Cg, w, η_s, v)
+    return (;x, XF, R, T, P_farfield, P_nearfield, Cg, w, ∂ₓ²w, ∂ₓ⁴w, η_s, v)
   end
 end
