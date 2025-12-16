@@ -98,9 +98,9 @@ function solve_surface_plate_2d(
 
   if return_displacements
     v = im*ω*ηp/(Gp-im*ω*Cp)*∂ₓ²w; # voltage
-    return (;R, T, P_farfield, P_nearfield, Cg, w, η_s, v)
+    return (;x, R, T, P_farfield, P_nearfield, Cg, w, η_s, v)
   else
-    return (;R, T, P_farfield, P_nearfield, Cg)
+    return (;x, R, T, P_farfield, P_nearfield, Cg)
   end
 end
 
@@ -164,7 +164,7 @@ function solve_submerged_plate_2d(
   u = transpose(u);
   ∂ₓ²u = transpose(∂ₓ²u);
 
-  # Computing BIE matrix 
+  # Computing BIE matrix
   k = first(dispersion_free_surface(α,0,H));
   N₀² = 1/2*(1 - (sin(k*H)^2)/α/H);
   k = k/im;
@@ -211,7 +211,7 @@ function solve_submerged_plate_2d(
   P_nearfield = Gp*ω^2/2*abs(ηp/(Gp-im*ω*Cp))^2*(abs(first(∂ₓ²w'*∂ₓ²w))*δx);
 
   if !return_displacements
-      return (;R, T, P_farfield, P_nearfield, Cg)
+      return (;x, R, T, P_farfield, P_nearfield, Cg)
   else
     # Evaluate displacements if plotting
     XF = collect(range(-3*L,3*L,301)); # free surface points
@@ -231,6 +231,6 @@ function solve_submerged_plate_2d(
     η_sc = -im*ω/g*dzG*ϕ_jump*δx;
     η_s = η_inc+η_sc;
 
-    return (;R, T, P_farfield, P_nearfield, Cg, w, η_s, v)
+    return (;x, XF, R, T, P_farfield, P_nearfield, Cg, w, η_s, v)
   end
 end
