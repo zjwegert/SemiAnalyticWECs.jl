@@ -1,3 +1,6 @@
+# Note: Much of the below has been translated from MATLAB, there are places that code could be improved and cached. 
+#       For now, these problems are fast enough that this isn't neccessary.
+
 """
     solve_surface_plate_2d(
       ω,D,Ib,ηp,Gp,Cp,H,L,N,n;
@@ -235,4 +238,5 @@ function solve_submerged_plate_2d(
 
     return (;x, XF, R, T, P_farfield, P_nearfield, Cg, w, ∂ₓ²w, ∂ₓ⁴w, η_s, v)
   end
+
 end
