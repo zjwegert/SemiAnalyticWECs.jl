@@ -11,7 +11,6 @@ makedocs(;
         "Home" => "index.md",
     ],
     repo="https://github.com/zjwegert/SemiAnalyticWECs.jl/blob/{commit}{path}#L{line}",
-    assets=String[],
 )
 
 deploydocs(;
