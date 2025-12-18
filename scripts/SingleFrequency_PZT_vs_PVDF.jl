@@ -198,9 +198,9 @@ fig = with_theme(theme_latexfonts(),fontsize=28,linewidth=3) do
         minorgrid = false, minorticks = false)
 
   ax22_l = Axis(fig[2,2],width=400,height=150,xlabel=L"x~(\mathrm{m})",ylabel=L"\mathrm{Im(M_{11})~(N)}",xticks=-10:5:10,
-    yticks=[-25,0,25],ylabelcolor=Makie.wong_colors()[1],yticklabelcolor=Makie.wong_colors()[1])
+    yticks=[-50,-25,0,25,50],ylabelcolor=Makie.wong_colors()[1],yticklabelcolor=Makie.wong_colors()[1])
   ax22_r = Axis(fig[2,2],width=400,height=150,xlabel=L"x~(\mathrm{m})",yaxisposition=:right,ylabel=L"\mathrm{Im(p)~(Pa)}",xticks=-10:5:10,
-    yticks=[-200,0,200],ylabelcolor=Makie.wong_colors()[2],yticklabelcolor=Makie.wong_colors()[2])
+    yticks=[-400,-200,0,200,400],ylabelcolor=Makie.wong_colors()[2],yticklabelcolor=Makie.wong_colors()[2])
   lines!(ax22_l,x,vec(imag(M11)),color=Makie.wong_colors()[1])
   lines!(ax22_r,x,vec(imag(p)),color=Makie.wong_colors()[2])
   xlims!(ax22_r,-12.5,12.5)
