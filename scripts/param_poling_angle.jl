@@ -50,7 +50,14 @@ for θ in (0,π/12,π/6,π/4,π/3,5π/12,π/2)
 end
 
 data = DataFrame("Problem"=>problem_names,"Material"=>mat_names,"BC"=>bc_names,"θ"=>θs,"R"=>R_s,"T"=>T_s,"P_farfield"=>P_FFs,"P_nearfield"=>P_NFs);
-# jldsave("$(@__DIR__)/data/poling_angle.jld2";data)
+# Add efficiency data
+effs = Float64[];
+for row in eachrow(data)
+  ϵ = 1 .- abs.(row.R).^2 .- abs.(row.T).^2
+  push!(effs,compute_pierson_moskowitz_efficiency(5,ϵ,Ts))
+end
+data[!,:Efficiency] = effs;
+jldsave("$(@__DIR__)/data/poling_angle.jld2";data)
 
 ##############################
 ### Plotting
@@ -70,3 +77,9 @@ fig = with_theme(theme_latexfonts(),fontsize=28,linewidth=4) do
 end
 
 # save("$(@__DIR__)/figures/poling_angle.png",fig;dpi=300)
+
+### Table data
+using Latexify
+data = load("$(@__DIR__)/data/poling_angle.jld2")["data"]
+df = data[[1,3:end...],[:θ,:Efficiency]]
+latexify(df; env = :table, booktabs = true, latex = false, fmt="%.2e") |> print

@@ -50,7 +50,14 @@ for coeff in (0.2,0.5,1,2,5)
 end
 
 data = DataFrame("Problem"=>problem_names,"Material"=>mat_names,"BC"=>bc_names,"G_coeff"=>G_coeffs,"G_value"=>G_values,"R"=>R_s,"T"=>T_s,"P_farfield"=>P_FFs,"P_nearfield"=>P_NFs);
-# jldsave("$(@__DIR__)/data/surface_conductance.jld2";data)
+# Add efficiency data
+effs = Float64[];
+for row in eachrow(data)
+  ϵ = 1 .- abs.(row.R).^2 .- abs.(row.T).^2
+  push!(effs,compute_pierson_moskowitz_efficiency(5,ϵ,Ts))
+end
+data[!,:Efficiency] = effs;
+jldsave("$(@__DIR__)/data/surface_conductance.jld2";data)
 
 ##############################
 ### Plotting
@@ -78,3 +85,13 @@ fig = with_theme(theme_latexfonts(),fontsize=28,linewidth=4) do
 end
 
 # save("$(@__DIR__)/figures/surface_conductance.png",fig;dpi=300)
+
+### Table data
+using Latexify
+data = load("$(@__DIR__)/data/surface_conductance.jld2")["data"]
+df = data[data.Material .== "PVDF",[:G_coeff,:Efficiency]]
+latexify(df; env = :table, booktabs = true, latex = false, fmt="%.2e") |> print
+
+data = load("$(@__DIR__)/data/surface_conductance.jld2")["data"]
+df = data[data.Material .== "PZT5H",[:G_coeff,:Efficiency]]
+latexify(df; env = :table, booktabs = true, latex = false, fmt="%.2e") |> print

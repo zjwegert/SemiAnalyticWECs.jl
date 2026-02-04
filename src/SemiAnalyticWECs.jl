@@ -4,7 +4,7 @@ using Roots
 using Roots: Newton
 using LinearAlgebra
 using ForwardDiff
-using QuadGK 
+using QuadGK
 using SpecialFunctions
 
 include("Materials.jl")
@@ -27,5 +27,26 @@ export ∂z∂ζ_regular_greens_submerged_2d
 include("Solvers2D.jl")
 export solve_surface_plate_2d
 export solve_submerged_plate_2d
+
+"""
+    compute_pierson_moskowitz_efficiency(T_p,ϵ,ωs;α=8.1e-3,g=9.81)
+
+Compute the efficiency of a system based on the Pierson-Moskowitz spectrum.
+"""
+function compute_pierson_moskowitz_efficiency(T_p,ϵ,Ts;α=8.1e-3,g=9.81)
+  ω_p = 2π/T_p;
+  S(ω) = α*g^2/ω^5*exp(-5/4*(ω_p/ω)^4);
+  ωs = 2π./Ts
+  # Reorder
+  jj = sortperm(ωs)
+  ϵ = ϵ[jj]
+  ωs = ωs[jj]
+  # Trapezoidal rule for integration
+  E = sum(1/2*(S(ωs[i-1]) + S(ωs[i]))*(ωs[i] - ωs[i-1]) for i in 2:length(ωs))
+  E_p = sum(1/2*(ϵ[i-1]*S(ωs[i-1]) + ϵ[i]*S(ωs[i]))*(ωs[i] - ωs[i-1]) for i in 2:length(ωs))
+  return E_p/E
+end
+
+export compute_pierson_moskowitz_efficiency
 
 end
