@@ -99,3 +99,5 @@ latexify(df; env = :table, booktabs = true, latex = false, fmt="%.2e") |> print
 
 df = data[data.Material .== "PZT5H",[:h,:Efficiency]]
 latexify(df; env = :table, booktabs = true, latex = false, fmt="%.2e") |> print
+
+data_surface[:,[:Material,:Efficiency]] # Surface efficiency data
