@@ -81,4 +81,34 @@ fig = with_theme(theme_latexfonts(),fontsize=28,linewidth=4) do
   fig
 end
 
-# save("$(@__DIR__)/figures/PZT_vs_PVDF.png",fig;dpi=300)
+save("$(@__DIR__)/figures/PZT_vs_PVDF.png",fig;dpi=300)
+
+fig = with_theme(theme_latexfonts(),fontsize=28,linewidth=4) do
+  fig = Figure(size = (1400, 400),figure_padding = (1,99,1,1))
+  # Energy (surface)
+  ax = Axis(fig[2,1],aspect=2,yscale=log10,xlabel="Period (s)",ylabel=L"$P$ ($\mathrm{W}\,\mathrm{m}^{-1}$)",xticks=3:9)
+  _data = data[data.BC .== "simply_supported" .&& data.Problem .== "submerged" .&& data.Material .== "PVDF",:]
+  lines!(ax,Ts,_data.P_nearfield[1],label="Submerged (Simply supported)")
+  _data = data[data.BC .== "clamped" .&& data.Problem .== "submerged" .&& data.Material .== "PVDF",:]
+  lines!(ax,Ts,_data.P_nearfield[1],label="Submerged (Clamped)")
+  _data = data[data.BC .== "simply_supported" .&& data.Problem .== "surface" .&& data.Material .== "PVDF",:]
+  lines!(ax,Ts,_data.P_nearfield[1],label="Surface (Simply supported)",linestyle=:dash)
+  _data = data[data.BC .== "clamped" .&& data.Problem .== "surface" .&& data.Material .== "PVDF",:]
+  lines!(ax,Ts,_data.P_nearfield[1],label="Surface (Clamped)",linestyle=:dash)
+  ylims!(ax,3,4000)
+  # Energy (submerged)
+  ax = Axis(fig[2,2],aspect=2,yscale=log10,xlabel="Period (s)",ylabel=L"$P$ ($\mathrm{W}\,\mathrm{m}^{-1}$)",xticks=3:9)
+  _data = data[data.BC .== "simply_supported" .&& data.Problem .== "submerged" .&& data.Material .== "PZT5H",:]
+  lines!(ax,Ts,_data.P_nearfield[1],label="Submerged (Simply supported)")
+  _data = data[data.BC .== "clamped" .&& data.Problem .== "submerged" .&& data.Material .== "PZT5H",:]
+  lines!(ax,Ts,_data.P_nearfield[1],label="Submerged (Clamped)")
+  _data = data[data.BC .== "simply_supported" .&& data.Problem .== "surface" .&& data.Material .== "PZT5H",:]
+  lines!(ax,Ts,_data.P_nearfield[1],label="Surface (Simply supported)",linestyle=:dash)
+  _data = data[data.BC .== "clamped" .&& data.Problem .== "surface" .&& data.Material .== "PZT5H",:]
+  lines!(ax,Ts,_data.P_nearfield[1],label="Surface (Clamped)",linestyle=:dash)
+  L = Legend(fig[1,1:2],ax,orientation=:horizontal)
+  ylims!(ax,3,4000)
+  fig
+end
+
+save("$(@__DIR__)/figures/PZT_vs_PVDF_power.png",fig;dpi=300)
