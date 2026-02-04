@@ -97,6 +97,5 @@ data = load("$(@__DIR__)/data/param_depth.jld2")["data"]
 df = data[data.Material .== "PVDF",[:h,:Efficiency]]
 latexify(df; env = :table, booktabs = true, latex = false, fmt="%.2e") |> print
 
-data = load("$(@__DIR__)/data/param_depth.jld2")["data"]
 df = data[data.Material .== "PZT5H",[:h,:Efficiency]]
 latexify(df; env = :table, booktabs = true, latex = false, fmt="%.2e") |> print

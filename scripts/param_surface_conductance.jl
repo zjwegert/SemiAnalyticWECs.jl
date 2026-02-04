@@ -92,6 +92,5 @@ data = load("$(@__DIR__)/data/surface_conductance.jld2")["data"]
 df = data[data.Material .== "PVDF",[:G_coeff,:Efficiency]]
 latexify(df; env = :table, booktabs = true, latex = false, fmt="%.2e") |> print
 
-data = load("$(@__DIR__)/data/surface_conductance.jld2")["data"]
 df = data[data.Material .== "PZT5H",[:G_coeff,:Efficiency]]
 latexify(df; env = :table, booktabs = true, latex = false, fmt="%.2e") |> print

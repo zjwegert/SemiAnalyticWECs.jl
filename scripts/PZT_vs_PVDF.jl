@@ -123,9 +123,8 @@ save("$(@__DIR__)/figures/PZT_vs_PVDF_power.png",fig;dpi=300)
 ### Table data
 using Latexify
 data = load("$(@__DIR__)/data/pzt_vs_pvdf.jld2")["data"]
-df = data[data.Material .== "PVDF",[:Problem,:BC,:Material,:Efficiency]]
+df = data[data.Material .== "PVDF",[:Problem,:BC,:Efficiency]]
 latexify(df; env = :table, booktabs = true, latex = false, fmt="%.2e") |> print
 
-data = load("$(@__DIR__)/data/pzt_vs_pvdf.jld2")["data"]
-df = data[data.Material .== "PZT5H",[:Problem,:BC,:Material,:Efficiency]]
+df = data[data.Material .== "PZT5H",[:Problem,:BC,:Efficiency]]
 latexify(df; env = :table, booktabs = true, latex = false, fmt="%.2e") |> print
