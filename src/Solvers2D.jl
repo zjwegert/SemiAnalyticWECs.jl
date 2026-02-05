@@ -1,4 +1,4 @@
-# Note: Much of the below has been translated from MATLAB, there are places that code could be improved and cached. 
+# Note: Much of the below has been translated from MATLAB, there are places that code could be improved and cached.
 #       For now, these problems are fast enough that this isn't neccessary.
 
 """
@@ -53,7 +53,7 @@ function solve_surface_plate_2d(
   x = -L:L/n:L;
 
   # Compute eigenvalues and eigenmodes for plate
-  λ,u,∂ₓ²u,_ = eigenmodes_1d(bc_case,N,L,x)
+  λ,u,∂ₓ²u,∂ₓ⁴u = eigenmodes_1d(bc_case,N,L,x)
 
   # Calculate free-surface Green function
   G = matrix_G_surface(α,H,L,n);
@@ -97,11 +97,12 @@ function solve_surface_plate_2d(
 
   # Compute near-field power takeoff
   ∂ₓ²w = transpose(ξ)*∂ₓ²u;
+  ∂ₓ⁴w = transpose(ξ)*∂ₓ⁴u;
   P_nearfield = Gp*ω^2/2*abs.(ηp*∂ₓ²w/(Gp-im*ω*Cp)).^2 ⋅ diag(ws) * (g/ω)^2; # normalise by (g/ω)^2
 
   if return_displacements
     v = im*ω*ηp/(Gp-im*ω*Cp)*∂ₓ²w; # voltage
-    return (;x, R, T, P_farfield, P_nearfield, Cg, w, η_s, v)
+    return (;x, R, T, P_farfield, P_nearfield, Cg, w, η_s, v, ∂ₓ²w, ∂ₓ⁴w)
   else
     return (;x, R, T, P_farfield, P_nearfield, Cg)
   end
