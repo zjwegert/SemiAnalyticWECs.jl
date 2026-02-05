@@ -32,6 +32,13 @@ export solve_submerged_plate_2d
     compute_pierson_moskowitz_efficiency(T_p,ϵ,ωs;α=8.1e-3,g=9.81)
 
 Compute the efficiency of a system based on the Pierson-Moskowitz spectrum.
+
+The function takes:
+- the peak period `T_p`;
+- a vector of energy absorption values `ϵ = 1 - |R|² - |T|²` for each frequency; and
+- a vector of frequencies `ωs`.
+
+The optional parameters `α` and `g` are the Phillips constant and gravitational acceleration, respectively.
 """
 function compute_pierson_moskowitz_efficiency(T_p,ϵ,Ts;α=8.1e-3,g=9.81)
   ω_p = 2π/T_p;
