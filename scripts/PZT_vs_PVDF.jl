@@ -128,3 +128,52 @@ latexify(df; env = :table, booktabs = true, latex = false, fmt="%.2e") |> print
 
 df = data[data.Material .== "PZT5H",[:Problem,:BC,:Efficiency]]
 latexify(df; env = :table, booktabs = true, latex = false, fmt="%.2e") |> print
+
+### Energy absorption proportion verification
+bc_name = :simply_supported
+C11,e21,K22,rhop = PZT5H_material_coefficents();
+
+H = 10;
+h = 2;
+L = 10;
+nu0 = 0.49;
+E0 = 3.2e+6;
+d0 = 0.01;
+rho0 = 1250;
+Ts = collect(range(3,9,2000));
+
+dp = 1.1e-4;
+G = K22/(2*dp);
+C = K22/(2*dp);
+B = d0^3/12*E0/(1-nu0^2) + 2*dp*(dp^2/3+d0*dp/2+d0^2/4)*C11;
+η = 1/2*(d0+dp)*e21;
+Ib = rho0*d0 + 2*rhop*dp;
+
+ω = 2π./Ts;
+D = @. B + ω*η^2/(im*G+ω*C);
+_data = @showprogress map(1:length(ω)) do i
+  solve_submerged_plate_2d(ω[i],D[i],Ib,η,G,C,H,h,L,100,ceil(Int,L/0.05);bc_case=bc_name)
+end
+
+g = 9.81;
+ρ_w = 1025;
+Cgs = getfield.(_data,:Cg)
+
+P_wave = 1/2*ρ_w*g*Cgs;
+P_absorbed_nf = getfield.(_data,:P_nearfield);
+P_absorbed_ff = getfield.(_data,:P_farfield);
+_R = getfield.(_data,:R);
+_T = getfield.(_data,:T);
+
+fig = with_theme(theme_latexfonts(),fontsize=32,linewidth=4) do
+  fig = Figure(size = (1400, 400),figure_padding = (1,99,1,1))
+  # Energy (surface)
+  ax = Axis(fig[1,1],aspect=3,xlabel="Period (s)",ylabel="Energy absorption\nproportion",xticks=3:9)
+  lines!(ax,Ts,(1 .- abs.(_R).^2 .-abs.(_T).^2),label=L"1-|R|^2-|T|^2")
+  lines!(ax,Ts,P_absorbed_nf./P_wave,label=L"P_{\textrm{nearfield}}/P_{\textrm{wave}}",linestyle=:dash)
+  # legend!(ax,position=:rb)
+  axislegend()
+  fig
+end
+
+save("$(@__DIR__)/figures/validation_coe.png",fig;dpi=300)
