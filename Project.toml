@@ -18,21 +18,6 @@ Quadmath = "be4d8f0f-7fa4-5f49-b795-2f01399ab2dd"
 Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
-[compat]
-BenchmarkTools = "1.6.3"
-CairoMakie = "0.15"
-ColorSchemes = "3.31.0"
-DataFrames = "1.8.1"
-ForwardDiff = "1"
-Latexify = "0.16.10"
-LinearAlgebra = "1"
-ProgressMeter = "1.11.0"
-QuadGK = "2.4"
-Quadmath = "0.5.13"
-Roots = "2.2.10"
-SpecialFunctions = "2.6.1"
-julia = "1.6.7"
-
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
