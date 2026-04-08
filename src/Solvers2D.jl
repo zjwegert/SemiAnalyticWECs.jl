@@ -7,7 +7,8 @@
       g = 9.81,
       ρ_w = 1025,
       return_displacements=false,
-      bc_case=:clamped
+      bc_case=:clamped,
+      rigid_case=false
     )
 Solve the 2D wave-plate interaction problem.
 
@@ -28,6 +29,7 @@ Optional Inputs:
 - ρ_w: water density (default 1025 kg/m³)
 - return_displacements: if true, also return plate displacements and potentials (default false)
 - bc_case: boundary condition case for plate eigenmodes (default :clamped)
+- rigid_case: if true, compute R and T for the rigid plate case (default false)
 
 Outputs:
 - R: reflection coefficient
@@ -43,7 +45,8 @@ function solve_surface_plate_2d(
   g = 9.81,
   ρ_w = 1025,
   return_displacements=false,
-  bc_case=:clamped
+  bc_case=:clamped,
+  rigid_case=false
 )
   D = D' # Due to choice of exp(-k*x) for incident wave
   np = 2n + 1
@@ -82,8 +85,9 @@ function solve_surface_plate_2d(
   f = -im*ω*diff;
   ξ = (ρ_w*g*I + D*Diagonal(λ.^4) - ω.^2*Ib*I + im*ω*B)\f; # calculated α_n
 
-  w = transpose(ξ)*u;
-  η_s =  transpose(ξ)*transpose(ϕ_r) + transpose(ϕ_d);
+  __r = rigid_case ? 0 : 1;
+  w = __r*transpose(ξ)*u;
+  η_s =  __r*transpose(ξ)*transpose(ϕ_r) + transpose(ϕ_d);
 
   # Compute reflection and transmission coefficients
   R = -1/(tan(k*H) + k*H*sec(k*H)^2)*transpose(exp.(-k*x)).*(α*η_s - im*ω*w) ⋅ diag(ws)
@@ -102,7 +106,7 @@ function solve_surface_plate_2d(
 
   if return_displacements
     v = im*ω*ηp/(Gp-im*ω*Cp)*∂ₓ²w; # voltage
-    return (;x, R, T, P_farfield, P_nearfield, Cg, w, η_s, v, ∂ₓ²w, ∂ₓ⁴w)
+    return (;x, R, T, P_farfield, P_nearfield, Cg, w, η_s, v, ∂ₓ²w, ∂ₓ⁴w, ϕ_d)
   else
     return (;x, R, T, P_farfield, P_nearfield, Cg)
   end
@@ -116,7 +120,8 @@ solve_surface_plate_2d(ω,D,Ib,ηp,Gp,Cp,H,h,L,N,n;kwargs...) = solve_surface_pl
       g = 9.81,
       ρ_w = 1025,
       return_displacements=false,
-      bc_case=:clamped
+      bc_case=:clamped,
+      rigid_case=false
     )
 Solve the 2D wave-plate interaction problem.
 
@@ -138,6 +143,7 @@ Optional Inputs:
 - ρ_w: water density (default 1025 kg/m³)
 - return_displacements: if true, also return plate displacements and potentials (default false)
 - bc_case: boundary condition case for plate eigenmodes (default :clamped)
+- rigid_case: if true, compute R and T for the rigid plate case (default false)
 
 Outputs:
 - R: reflection coefficient
@@ -153,7 +159,8 @@ function solve_submerged_plate_2d(
   g = 9.81,
   ρ_w = 1025,
   return_displacements=false,
-  bc_case=:clamped
+  bc_case=:clamped,
+  rigid_case=false
 )
   A = 1; # incident wave amplitude
   α = ω.^2/g
@@ -202,7 +209,8 @@ function solve_submerged_plate_2d(
   c = (K_stiff-ω^2*M_mass+im*ω*ρ_w*M_added)\F;
 
   # Jump in potential of coupled problem
-  ϕ_jump = ϕ_di_jump + ϕ_rad_jump*c;
+  __r = rigid_case ? 0 : 1;
+  ϕ_jump = ϕ_di_jump + __r*ϕ_rad_jump*c;
 
   # Reflection and transmission
   coeff = ω*sinh(k*(H-h))*cosh(k*H)/(2*A*g*H*N₀²);
@@ -217,13 +225,13 @@ function solve_submerged_plate_2d(
   P_nearfield = Gp*ω^2/2*abs(ηp/(Gp-im*ω*Cp))^2*(abs(first(∂ₓ²w'*∂ₓ²w))*δx);
 
   if !return_displacements
-      return (;x, R, T, P_farfield, P_nearfield, Cg)
+      return (;x, R, T, P_farfield, P_nearfield, Cg, ϕ_d = ϕ_di_jump)
   else
     # Evaluate displacements if plotting
     XF = collect(range(-3*L,3*L,301)); # free surface points
     dzG = zeros(ComplexF64,length(XF),length(x));
-    w = u*c; # deflection of plate
-    v = im*ω*ηp/(Gp-im*ω*Cp)*∂ₓ²w; # voltage
+    w = __r*u*c; # deflection of plate
+    v = __r*im*ω*ηp/(Gp-im*ω*Cp)*∂ₓ²w; # voltage
 
     # Greens function matrix for free surface
     for ii=axes(dzG,1)
@@ -236,8 +244,8 @@ function solve_submerged_plate_2d(
     η_inc = A*exp.(im*k*XF);
     η_sc = -im*ω/g*dzG*ϕ_jump*δx;
     η_s = η_inc+η_sc;
-
-    return (;x, XF, R, T, P_farfield, P_nearfield, Cg, w, ∂ₓ²w, ∂ₓ⁴w, η_s, v)
+    
+    return (;x, XF, R, T, P_farfield, P_nearfield, Cg, w, ∂ₓ²w, ∂ₓ⁴w, η_s, v, ϕ_d = ϕ_di_jump)
   end
 
 end
