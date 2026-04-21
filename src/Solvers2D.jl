@@ -228,7 +228,7 @@ function solve_submerged_plate_2d(
       return (;x, R, T, P_farfield, P_nearfield, Cg, ϕ_d = ϕ_di_jump)
   else
     # Evaluate displacements if plotting
-    XF = collect(range(-3*L,3*L,301)); # free surface points
+    XF = collect(range(-3*L,3*L,3*(n+1))); # free surface points
     dzG = zeros(ComplexF64,length(XF),length(x));
     w = __r*u*c; # deflection of plate
     v = __r*im*ω*ηp/(Gp-im*ω*Cp)*∂ₓ²w; # voltage
@@ -244,7 +244,7 @@ function solve_submerged_plate_2d(
     η_inc = A*exp.(im*k*XF);
     η_sc = -im*ω/g*dzG*ϕ_jump*δx;
     η_s = η_inc+η_sc;
-    
+
     return (;x, XF, R, T, P_farfield, P_nearfield, Cg, w, ∂ₓ²w, ∂ₓ⁴w, η_s, v, ϕ_d = ϕ_di_jump)
   end
 
