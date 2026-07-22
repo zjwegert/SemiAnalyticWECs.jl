@@ -21,7 +21,7 @@ include("GreensFunctions.jl")
 export matrix_G_surface
 export greens_surface_2d
 export regular_greens_submerged_2d
-export ∂z_regular_greens_submerged_2d
+export ∂ζ_regular_greens_submerged_2d
 export ∂z∂ζ_regular_greens_submerged_2d
 
 include("Solvers2D.jl")

@@ -236,7 +236,7 @@ function solve_submerged_plate_2d(
     # Greens function matrix for free surface
     for ii=axes(dzG,1)
         for jj=axes(dzG,2)
-            dzG[ii,jj] = ∂z_regular_greens_submerged_2d(abs(XF[ii]-x[jj]),-h,0,H,α)/2/π;
+            dzG[ii,jj] = ∂ζ_regular_greens_submerged_2d(abs(XF[ii]-x[jj]),0,-h,H,α)/2/π;
         end
     end
 

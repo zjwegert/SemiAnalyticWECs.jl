@@ -102,7 +102,7 @@ This can be done either using:
   in the series is specified by `N`.
 
 Derivatives of ϕ - log(r) can be computed using the following functions:
-- `∂z_regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)`
+- `∂ζ_regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)`
 - `∂z∂ζ_regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)`
 """
 function regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)
@@ -118,12 +118,12 @@ end
 ∂ = ForwardDiff.derivative # Forward AD is quite efficent here, so I think this is cleanest
 
 """
-    ∂z_regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)
+    ∂ζ_regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)
 
 Compute the z derivative of the regular Green's function for a submerged source based on Append B.2
 of Linton & McIver (2001) (Handbook of mathematical techniques for wave/structure interactions).
 
-In paricular, we compute ∂_z(ϕ - log(r)) where r = sqrt(X² + (z-ζ)²) using AD.
+In paricular, we compute ∂_z(ϕ). I.e., we include +log(1/r) where r = sqrt(X² + (z-ζ)²).
 
 This can be done either using:
 - `method=:residue` : Computes Equation B.38 (Linton & McIver, 2001) using
@@ -132,9 +132,12 @@ This can be done either using:
   eigenfunction expansion method. If this method is used, the number of terms
   in the series is specified by `N`.
 """
-function ∂z_regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)
-  f(z) = regular_greens_submerged_2d(x,z,ζ,h,K;method,N)
-  return ∂(f,z)
+function ∂ζ_regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)  
+  function f(ζ)
+    r = sqrt(x^2 + (z-ζ)^2)
+    return log(r) + regular_greens_submerged_2d(x,z,ζ,h,K;method,N)
+  end
+  return ∂(f,ζ)
 end
 
 """
