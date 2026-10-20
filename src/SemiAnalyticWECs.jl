@@ -6,10 +6,23 @@ using LinearAlgebra
 using ForwardDiff
 using QuadGK
 using SpecialFunctions
+using Gridap
+using GridapGmsh
+using Arpack
+using LinearMaps
+using HCubature
+using Gmsh: gmsh
+
+using Gridap.MultiField, Gridap.ReferenceFEs, Gridap.FESpaces, Gridap.CellData, Gridap.TensorValues
+using Gridap.TensorValues: ⊗
 
 include("Materials.jl")
 export PVDF_TechMan_material_coefficents
 export PZT5H_material_coefficents
+export plane_stress_elastic_coefficents
+export PZT5H_plane_stress_coefficents
+export PVDF_material_coefficents
+export PVDF_plane_stress_coefficents
 
 include("DispersionEquations.jl")
 export dispersion_free_surface
@@ -17,16 +30,32 @@ export dispersion_free_surface
 include("EigenModes1D.jl")
 export eigenmodes_1d
 
+include("EigenModes2D.jl")
+export eigenmodes_2d
+
 include("GreensFunctions.jl")
 export matrix_G_surface
 export greens_surface_2d
 export regular_greens_submerged_2d
-export ∂ζ_regular_greens_submerged_2d
+export ∂ζ_greens_submerged_2d
 export ∂z∂ζ_regular_greens_submerged_2d
+export ∂z∂ζ_regular_greens_submerged_3d
+export ∂ζ_greens_submerged_3d
+
+include("Meshes2D.jl")
+export generate_voxelised_trian
+export disk_2d
+export annulus_2d
+export annulus_portion_removed_2d
+export rectangle_2d
 
 include("Solvers2D.jl")
 export solve_surface_plate_2d
 export solve_submerged_plate_2d
+
+include("Solvers3D.jl")
+export solve_submerged_plate_3d
+export precompute_cache
 
 """
     compute_pierson_moskowitz_efficiency(T_p,ϵ,ωs;α=8.1e-3,g=9.81)

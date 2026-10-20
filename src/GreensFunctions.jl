@@ -101,8 +101,7 @@ This can be done either using:
   eigenfunction expansion method. If this method is used, the number of terms
   in the series is specified by `N`.
 
-Derivatives of ϕ - log(r) can be computed using the following functions:
-- `∂ζ_regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)`
+Derivatives of ϕ - log(r) can be computed using
 - `∂z∂ζ_regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)`
 """
 function regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)
@@ -118,12 +117,12 @@ end
 ∂ = ForwardDiff.derivative # Forward AD is quite efficent here, so I think this is cleanest
 
 """
-    ∂ζ_regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)
+    ∂ζ_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)
 
 Compute the z derivative of the regular Green's function for a submerged source based on Append B.2
 of Linton & McIver (2001) (Handbook of mathematical techniques for wave/structure interactions).
 
-In paricular, we compute ∂_z(ϕ). I.e., we include +log(1/r) where r = sqrt(X² + (z-ζ)²).
+In paricular, we compute ∂_ζ(ϕ). I.e., we include +log(1/r) where r = sqrt(X² + (z-ζ)²).
 
 This can be done either using:
 - `method=:residue` : Computes Equation B.38 (Linton & McIver, 2001) using
@@ -132,7 +131,7 @@ This can be done either using:
   eigenfunction expansion method. If this method is used, the number of terms
   in the series is specified by `N`.
 """
-function ∂ζ_regular_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)  
+function ∂ζ_greens_submerged_2d(x,z,ζ,h,K;method=:residue,N=100)
   function f(ζ)
     r = sqrt(x^2 + (z-ζ)^2)
     return log(r) + regular_greens_submerged_2d(x,z,ζ,h,K;method,N)
@@ -196,7 +195,7 @@ function _reg_greens_submerged_2d_residue_method(x,z,ζ,h,K)
   return - log(r₁) - I₁ - I₂ - I₁_residue
 end
 
-# Green's function submerged source (3D) 
+# Green's function submerged source (3D)
 
 function _reg_greens_submerged_3d(R,z,ζ,K,H)
   k₀ = first(dispersion_free_surface(K,0,H))
@@ -224,8 +223,23 @@ function _reg_greens_submerged_3d(R,z,ζ,K,H)
   return 1/r₂ + I₁ + I₂ + I₁_residue
 end
 
-function ∂z∂ζ_reg_greens_submerged_3d(R,z,ζ,K,H)
-  g(ζ,z) = regular_greens_submerged_3d(R,z,ζ,K,H)
+"""
+    ∂z∂ζ_regular_greens_submerged_3d(R,z,ζ,K,H)
+
+Compute the mixed z-ζ derivative of the regular Green's function G for a submerged source.
+
+In paricular, we compute ∂²_zζ(G - 1/r) where r = sqrt(R² + (z-ζ)²) using AD.
+"""
+function ∂z∂ζ_regular_greens_submerged_3d(R,z,ζ,K,H)
+  g(ζ,z) = _reg_greens_submerged_3d(R,z,ζ,K,H)
   f(ζ) = ∂(z->g(ζ,z),z)
+  return ∂(f,ζ)
+end
+
+function ∂ζ_greens_submerged_3d(R,z,ζ,K,H)
+  function f(ζ)
+    r = sqrt(R^2 + (z-ζ)^2)
+    return 1/r + _reg_greens_submerged_3d(R,z,ζ,K,H)
+  end
   return ∂(f,ζ)
 end
